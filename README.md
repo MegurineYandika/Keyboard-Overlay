@@ -6,6 +6,14 @@ A lightweight, ultra-low-latency Reactive Keyboard Overlay desktop application w
 
 ## 🚀 Key Features
 
+- **Scalable UI & Custom Window Dimensions:**
+  - **Vector Scale Slider & Presets**: Zoom the entire overlay from 50% to 250% with crystal-sharp vector graphics for 1080p, 1440p, or 4K monitors (quick presets: 75%, 100%, 125%, 150%, 200%).
+  - **Interactive Mouse-Wheel Scaling**: In Edit Mode, scroll your mouse wheel over the overlay to scale it up or down in real-time!
+  - **Custom Width & Length (Height)**: Choose between Auto-fit (recommended) or specify exact custom window dimensions.
+- **Easy Exit Application Buttons:**
+  - `✕ Exit` button in the Edit Mode top toolbar.
+  - `✕ Exit KeysPerSecond` item in the right-click Context Menu.
+  - `✕ Exit Application` button in the Settings window.
 - **Interactive Configuration UI:**
   - Full graphical Settings dialog (`SettingsWindow`) accessible via the Edit Mode toolbar or right-click context menu.
   - **Add Keys**: Add any key by typing its name, selecting a Virtual Key code, or simply clicking **"Detect Key"** and pressing the physical key on your keyboard!
