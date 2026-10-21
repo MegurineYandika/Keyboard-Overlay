@@ -1,0 +1,366 @@
+<Window x:Class="KeysPerSecond.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:KeysPerSecond"
+        xmlns:vm="clr-namespace:KeysPerSecond.ViewModels"
+        xmlns:conv="clr-namespace:KeysPerSecond.Converters"
+        mc:Ignorable="d"
+        Title="KeysPerSecond Overlay"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        SizeToContent="WidthAndHeight"
+        ResizeMode="NoResize"
+        WindowStartupLocation="Manual"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        RenderOptions.BitmapScalingMode="HighQuality"
+        RenderOptions.ClearTypeHint="Enabled">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <conv:InverseBooleanToVisibilityConverter x:Key="InvBoolToVis" />
+        <conv:StringToBrushConverter x:Key="StringToBrush" />
+        <conv:StringToOrientationConverter x:Key="StringToOrientation" />
+        <conv:KpsToWidthMultiConverter x:Key="KpsToWidthConverter" />
+
+        <!-- Glow effect for KPS counter -->
+        <DropShadowEffect x:Key="CyanGlow" Color="#00E5FF" BlurRadius="14" ShadowDepth="0" Opacity="0.8" />
+        <DropShadowEffect x:Key="PinkGlow" Color="#FF007F" BlurRadius="14" ShadowDepth="0" Opacity="0.8" />
+        <DropShadowEffect x:Key="SubtleShadow" Color="#000000" BlurRadius="12" ShadowDepth="3" Opacity="0.6" />
+
+        <!-- Key Card Style -->
+        <Style x:Key="KeyCardBorderStyle" TargetType="Border">
+            <Setter Property="Background" Value="#181926" />
+            <Setter Property="BorderBrush" Value="#2D304A" />
+            <Setter Property="BorderThickness" Value="1.5" />
+            <Setter Property="CornerRadius" Value="{Binding DataContext.Config.Style.CornerRadius, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <ScaleTransform ScaleX="1.0" ScaleY="1.0" />
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsPressed}" Value="True">
+                    <Setter Property="Background" Value="{Binding AccentBrush}" />
+                    <Setter Property="BorderBrush" Value="#FFFFFF" />
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect Color="#00E5FF" BlurRadius="18" ShadowDepth="0" Opacity="0.9" />
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="RenderTransform">
+                        <Setter.Value>
+                            <ScaleTransform ScaleX="0.94" ScaleY="0.94" />
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Button style for edit mode toolbar -->
+        <Style x:Key="EditModeButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#272A3E" />
+            <Setter Property="Foreground" Value="#E0E6ED" />
+            <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Variable, sans-serif" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Padding" Value="10,4" />
+            <Setter Property="BorderBrush" Value="#3D4262" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#383D59" />
+                                <Setter TargetName="border" Property="BorderBrush" Value="#00E5FF" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#00E5FF" />
+                                <Setter Property="Foreground" Value="#000000" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <!-- Root Grid -->
+    <Grid Margin="12" MouseLeftButtonDown="OnRootMouseLeftButtonDown">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" /> <!-- Edit Toolbar / Banner -->
+            <RowDefinition Height="Auto" /> <!-- Main Widget Card -->
+        </Grid.RowDefinitions>
+
+        <!-- EDIT MODE DRAG / CONTROL HEADER BAR -->
+        <Border Grid.Row="0"
+                Margin="0,0,0,8"
+                Padding="12,8"
+                CornerRadius="8"
+                Background="#EE141724"
+                BorderBrush="#00E5FF"
+                BorderThickness="1.5"
+                Effect="{StaticResource CyanGlow}"
+                Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="#00E5FF" CornerRadius="4" Padding="6,2" Margin="0,0,8,0">
+                        <TextBlock Text="EDIT MODE"
+                                   FontSize="10"
+                                   FontWeight="Bold"
+                                   Foreground="#0B0D17"
+                                   FontFamily="Segoe UI, sans-serif" />
+                    </Border>
+                    <TextBlock Text="Drag window to reposition • Press "
+                               Foreground="#B0B8C8"
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               FontFamily="Segoe UI, sans-serif" />
+                    <TextBlock Text="{Binding Config.ToggleEditModeKey}"
+                               Foreground="#00E5FF"
+                               FontWeight="Bold"
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               FontFamily="Segoe UI, sans-serif" />
+                    <TextBlock Text=" to lock"
+                               Foreground="#B0B8C8"
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               FontFamily="Segoe UI, sans-serif" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="12,0,0,0">
+                    <Button Content="Reset Stats"
+                            Style="{StaticResource EditModeButtonStyle}"
+                            Margin="0,0,6,0"
+                            Click="OnResetStatsClick" />
+                    <Button Content="Lock Overlay"
+                            Style="{StaticResource EditModeButtonStyle}"
+                            BorderBrush="#00E5FF"
+                            Click="OnLockOverlayClick" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- MAIN OVERLAY WIDGET CONTAINER -->
+        <Border Grid.Row="1"
+                CornerRadius="{Binding Config.Style.CornerRadius}"
+                BorderBrush="{Binding Config.Style.BorderColor, Converter={StaticResource StringToBrush}}"
+                BorderThickness="1.5"
+                Padding="14"
+                Effect="{StaticResource SubtleShadow}">
+            <!-- Dynamic Background based on config opacity -->
+            <Border.Background>
+                <SolidColorBrush Color="#12131C" Opacity="{Binding Config.Style.BackgroundOpacity}" />
+            </Border.Background>
+
+            <!-- Edit mode draggable border outline -->
+            <Grid>
+                <!-- Draggable outline highlight when in edit mode -->
+                <Border CornerRadius="{Binding Config.Style.CornerRadius}"
+                        BorderBrush="#00E5FF"
+                        BorderThickness="1.5"
+                        Margin="-2"
+                        IsHitTestVisible="False"
+                        Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVis}}">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Opacity" Value="0.9" />
+                        </Style>
+                    </Border.Style>
+                </Border>
+
+                <!-- Content Layout: Stats on top, Keys below (or side by side) -->
+                <StackPanel Orientation="Vertical">
+
+                    <!-- METRICS / STATS BAR -->
+                    <Grid Margin="0,0,0,12"
+                          Visibility="{Binding Config.Style.ShowKpsCounter, Converter={StaticResource BoolToVis}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Live KPS Display -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding CurrentKps}"
+                                       FontFamily="Segoe UI, Segoe UI Black, sans-serif"
+                                       FontSize="38"
+                                       FontWeight="Black"
+                                       Foreground="#00E5FF"
+                                       VerticalAlignment="Bottom"
+                                       LineHeight="38"
+                                       Effect="{StaticResource CyanGlow}" />
+                            <TextBlock Text="KPS"
+                                       FontFamily="Segoe UI, Segoe UI Semibold, sans-serif"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       Foreground="#64748B"
+                                       Margin="6,0,0,6"
+                                       VerticalAlignment="Bottom" />
+                        </StackPanel>
+
+                        <!-- Activity Indicator Spark / Bar -->
+                        <Border x:Name="SparkBarContainer"
+                                Grid.Column="1"
+                                Margin="16,0,16,6"
+                                Height="4"
+                                Background="#1F2336"
+                                CornerRadius="2"
+                                VerticalAlignment="Bottom"
+                                HorizontalAlignment="Stretch">
+                            <Border CornerRadius="2"
+                                    HorizontalAlignment="Left"
+                                    Background="#00E5FF">
+                                <Border.Width>
+                                    <MultiBinding Converter="{StaticResource KpsToWidthConverter}">
+                                        <Binding Path="CurrentKps" />
+                                        <Binding Path="MaxKps" />
+                                        <Binding Path="ActualWidth" ElementName="SparkBarContainer" />
+                                    </MultiBinding>
+                                </Border.Width>
+                            </Border>
+                        </Border>
+
+                        <!-- Max KPS & Total Presses Pills -->
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="0,0,0,4">
+                            <!-- Max KPS -->
+                            <Border Background="#1C2033"
+                                    CornerRadius="6"
+                                    Padding="8,4"
+                                    Margin="0,0,6,0"
+                                    BorderBrush="#2A2F4B"
+                                    BorderThickness="1"
+                                    Visibility="{Binding Config.Style.ShowMaxKps, Converter={StaticResource BoolToVis}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="MAX "
+                                               FontSize="10"
+                                               FontWeight="Bold"
+                                               Foreground="#94A3B8"
+                                               FontFamily="Segoe UI, sans-serif" />
+                                    <TextBlock Text="{Binding MaxKps}"
+                                               FontSize="11"
+                                               FontWeight="Bold"
+                                               Foreground="#FF007F"
+                                               FontFamily="Segoe UI, sans-serif" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Total Presses -->
+                            <Border Background="#1C2033"
+                                    CornerRadius="6"
+                                    Padding="8,4"
+                                    BorderBrush="#2A2F4B"
+                                    BorderThickness="1"
+                                    Visibility="{Binding Config.Style.ShowTotalCounter, Converter={StaticResource BoolToVis}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="TOT "
+                                               FontSize="10"
+                                               FontWeight="Bold"
+                                               Foreground="#94A3B8"
+                                               FontFamily="Segoe UI, sans-serif" />
+                                    <TextBlock Text="{Binding TotalPresses, StringFormat='{}{0:N0}'}"
+                                               FontSize="11"
+                                               FontWeight="Bold"
+                                               Foreground="#38BDF8"
+                                               FontFamily="Segoe UI, sans-serif" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- TRACKED KEYS ITEMS CONTROL -->
+                    <ItemsControl ItemsSource="{Binding TrackedKeys}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="{Binding DataContext.Config.Style.Orientation, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource StringToOrientation}}" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:KeyItemViewModel}">
+                                <Border Style="{StaticResource KeyCardBorderStyle}"
+                                        Width="{Binding Width}"
+                                        Height="{Binding Height}"
+                                        Margin="4">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+
+                                        <!-- Key Name / Label -->
+                                        <TextBlock Grid.Row="0"
+                                                   Text="{Binding Label}"
+                                                   FontFamily="Segoe UI, Segoe UI Black, sans-serif"
+                                                   FontSize="22"
+                                                   FontWeight="Black"
+                                                   Foreground="#FFFFFF"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsPressed}" Value="True">
+                                                            <Setter Property="Foreground" Value="#0A0B10" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+
+                                        <!-- Individual Key Press Counter -->
+                                        <Border Grid.Row="1"
+                                                Margin="0,0,0,6"
+                                                HorizontalAlignment="Center"
+                                                Visibility="{Binding DataContext.Config.Style.ShowIndividualCounters, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}">
+                                            <TextBlock Text="{Binding TotalPresses, StringFormat='{}{0:N0}'}"
+                                                       FontFamily="Segoe UI, Segoe UI Semibold, sans-serif"
+                                                       FontSize="11"
+                                                       FontWeight="Bold"
+                                                       Foreground="#8B95A5"
+                                                       HorizontalAlignment="Center">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsPressed}" Value="True">
+                                                                <Setter Property="Foreground" Value="#0A0B10" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

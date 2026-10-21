@@ -1,0 +1,54 @@
+{
+  "Window": {
+    "Left": 200.0,
+    "Top": 200.0,
+    "Scale": 1.0,
+    "Topmost": true,
+    "IsLocked": true
+  },
+  "Style": {
+    "AccentColor": "#00E5FF",
+    "PressedColor": "#FF007F",
+    "BackgroundColor": "#12131C",
+    "BackgroundOpacity": 0.88,
+    "BorderColor": "#2A2E45",
+    "TextColor": "#FFFFFF",
+    "KeyWidth": 68.0,
+    "KeyHeight": 68.0,
+    "KeySpacing": 10.0,
+    "CornerRadius": 14.0,
+    "ShowIndividualCounters": true,
+    "ShowKpsCounter": true,
+    "ShowMaxKps": true,
+    "ShowTotalCounter": true,
+    "Orientation": "Horizontal"
+  },
+  "ToggleEditModeKey": "Ctrl+Shift+F10",
+  "ResetStatsKey": "Ctrl+Shift+R",
+  "TrackedKeys": [
+    {
+      "Key": "Z",
+      "Label": "Z",
+      "VirtualKey": 90,
+      "AccentColor": "#00E5FF"
+    },
+    {
+      "Key": "X",
+      "Label": "X",
+      "VirtualKey": 88,
+      "AccentColor": "#00E5FF"
+    },
+    {
+      "Key": "C",
+      "Label": "C",
+      "VirtualKey": 67,
+      "AccentColor": "#FF007F"
+    },
+    {
+      "Key": "V",
+      "Label": "V",
+      "VirtualKey": 86,
+      "AccentColor": "#FF007F"
+    }
+  ]
+}
