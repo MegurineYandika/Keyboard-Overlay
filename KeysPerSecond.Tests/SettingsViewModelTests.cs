@@ -1,0 +1,181 @@
+using System.Linq;
+using System.Threading;
+using System.Windows;
+using KeysPerSecond.Models;
+using KeysPerSecond.ViewModels;
+using Xunit;
+
+namespace KeysPerSecond.Tests
+{
+    public class SettingsViewModelTests
+    {
+        [Fact]
+        public void Initialize_PopulatesFromConfig()
+        {
+            var config = new AppConfig();
+            var vm = new SettingsViewModel(config);
+
+            Assert.Equal(config.TrackedKeys.Count, vm.Keys.Count);
+            Assert.Equal(config.Style.AccentColor, vm.AccentColor);
+            Assert.Equal(config.Style.KeyWidth, vm.KeyWidth);
+            Assert.Equal("Horizontal", vm.Orientation);
+            Assert.True(vm.IsHorizontal);
+            Assert.False(vm.IsVertical);
+        }
+
+        [Fact]
+        public void AddCurrentKey_AddsValidKey_ToCollection()
+        {
+            var config = new AppConfig();
+            var vm = new SettingsViewModel(config);
+            int initialCount = vm.Keys.Count;
+
+            vm.InputKey = "Space";
+            vm.InputLabel = "SPACE";
+            vm.InputAccentColor = "#FF007F";
+
+            bool success = vm.AddCurrentKey();
+
+            Assert.True(success);
+            Assert.Equal(initialCount + 1, vm.Keys.Count);
+            var added = vm.Keys.Last();
+            Assert.Equal("Space", added.Key);
+            Assert.Equal("SPACE", added.Label);
+            Assert.Equal(0x20, added.VirtualKey);
+            Assert.Equal("#FF007F", added.AccentColor);
+        }
+
+        [Fact]
+        public void AddCurrentKey_RejectsEmptyOrInvalidKey()
+        {
+            var config = new AppConfig();
+            var vm = new SettingsViewModel(config);
+            int initialCount = vm.Keys.Count;
+
+            vm.InputKey = "";
+            bool success = vm.AddCurrentKey();
+
+            Assert.False(success);
+            Assert.Equal(initialCount, vm.Keys.Count);
+        }
+
+        [Fact]
+        public void DeleteKey_RemovesKeyFromCollection()
+        {
+            var config = new AppConfig();
+            var vm = new SettingsViewModel(config);
+            int initialCount = vm.Keys.Count;
+
+            var keyToDelete = vm.Keys[1];
+            vm.DeleteKey(keyToDelete);
+
+            Assert.Equal(initialCount - 1, vm.Keys.Count);
+            Assert.DoesNotContain(keyToDelete, vm.Keys);
+        }
+
+        [Fact]
+        public void MoveKeyUpAndDown_ChangesOrderProperly()
+        {
+            var config = new AppConfig();
+            var vm = new SettingsViewModel(config);
+
+            var firstKey = vm.Keys[0];
+            var secondKey = vm.Keys[1];
+
+            // Move second key up
+            vm.MoveKeyUp(secondKey);
+            Assert.Equal(secondKey, vm.Keys[0]);
+            Assert.Equal(firstKey, vm.Keys[1]);
+
+            // Move secondKey down again
+            vm.MoveKeyDown(secondKey);
+            Assert.Equal(firstKey, vm.Keys[0]);
+            Assert.Equal(secondKey, vm.Keys[1]);
+        }
+
+        [Theory]
+        [InlineData("osu_2k", 2)]
+        [InlineData("osu_4k", 4)]
+        [InlineData("osu_7k", 7)]
+        [InlineData("wasd", 4)]
+        [InlineData("arrows", 4)]
+        public void ApplyPreset_AppliesCorrectKeyCounts(string preset, int expectedCount)
+        {
+            var config = new AppConfig();
+            var vm = new SettingsViewModel(config);
+
+            vm.ApplyPreset(preset);
+
+            Assert.Equal(expectedCount, vm.Keys.Count);
+        }
+
+        [Fact]
+        public void SetCapturedKey_UpdatesInputState()
+        {
+            var config = new AppConfig();
+            var vm = new SettingsViewModel(config);
+            vm.IsCapturingKey = true;
+
+            vm.SetCapturedKey(0x41, "A");
+
+            Assert.False(vm.IsCapturingKey);
+            Assert.Equal(0x41, vm.InputVirtualKey);
+            Assert.Equal("A", vm.InputKey);
+            Assert.Equal("A", vm.InputLabel);
+        }
+
+        [Fact]
+        public void BuildResultConfig_ReflectsAllModifications()
+        {
+            var config = new AppConfig();
+            var vm = new SettingsViewModel(config);
+
+            vm.AccentColor = "#123456";
+            vm.KeyWidth = 72;
+            vm.Orientation = "Vertical";
+            vm.ToggleEditModeKey = "Ctrl+Alt+F12";
+            vm.Keys.Clear();
+            vm.Keys.Add(new KeyBindingConfig { Key = "Q", Label = "Q", VirtualKey = 81 });
+
+            var result = vm.BuildResultConfig();
+
+            Assert.Equal("#123456", result.Style.AccentColor);
+            Assert.Equal(72, result.Style.KeyWidth);
+            Assert.Equal("Vertical", result.Style.Orientation);
+            Assert.Equal("Ctrl+Alt+F12", result.ToggleEditModeKey);
+            Assert.Single(result.TrackedKeys);
+            Assert.Equal(81, result.TrackedKeys[0].VirtualKey);
+        }
+
+        [Fact]
+        public void SettingsWindow_InitializesWithoutException_OnSTAThread()
+        {
+            Exception? caughtException = null;
+
+            var staThread = new Thread(() =>
+            {
+                try
+                {
+                    WpfTestHelper.EnsureApplication();
+
+                    var config = new AppConfig();
+                    var window = new SettingsWindow(config);
+                    Assert.NotNull(window);
+                    Assert.NotNull(window.DataContext);
+
+                    window.Close();
+                }
+                catch (Exception ex)
+                {
+                    caughtException = ex;
+                }
+            });
+
+            staThread.SetApartmentState(ApartmentState.STA);
+            staThread.Start();
+            staThread.Join(5000);
+
+            Assert.Null(caughtException);
+        }
+    }
+}

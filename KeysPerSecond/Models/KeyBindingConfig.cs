@@ -21,5 +21,18 @@ namespace KeysPerSecond.Models
 
         [JsonPropertyName("Height")]
         public double? Height { get; set; }
+
+        public KeyBindingConfig Clone()
+        {
+            return new KeyBindingConfig
+            {
+                Key = this.Key,
+                Label = this.Label,
+                VirtualKey = this.VirtualKey,
+                AccentColor = this.AccentColor,
+                Width = this.Width,
+                Height = this.Height
+            };
+        }
     }
 }

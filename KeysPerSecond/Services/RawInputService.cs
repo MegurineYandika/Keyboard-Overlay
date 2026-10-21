@@ -126,6 +126,13 @@ namespace KeysPerSecond.Services
             }
         }
 
+        public void UpdateHotkeys(AppConfig config)
+        {
+            UnregisterGlobalHotkeys();
+            ParseHotkeys(config);
+            RegisterGlobalHotkeys();
+        }
+
         private void ParseHotkeys(AppConfig config)
         {
             ParseHotkeyString(config.ToggleEditModeKey, ref _editModeVKey, ref _editModeRequireCtrl, ref _editModeRequireShift, ref _editModeRequireAlt, 0x79);

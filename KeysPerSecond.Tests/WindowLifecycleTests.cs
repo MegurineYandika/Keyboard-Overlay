@@ -19,10 +19,7 @@ namespace KeysPerSecond.Tests
                 try
                 {
                     // Ensure WPF Application context exists
-                    if (Application.Current == null)
-                    {
-                        new Application();
-                    }
+                    WpfTestHelper.EnsureApplication();
 
                     var window = new MainWindow();
                     Assert.NotNull(window);
@@ -45,3 +42,4 @@ namespace KeysPerSecond.Tests
         }
     }
 }
+

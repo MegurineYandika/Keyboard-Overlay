@@ -103,9 +103,17 @@
 
     <!-- Root Grid -->
     <Grid Margin="12" MouseLeftButtonDown="OnRootMouseLeftButtonDown">
+        <Grid.ContextMenu>
+            <ContextMenu Background="#161928" Foreground="#E2E8F0" BorderBrush="#2F3652">
+                <MenuItem Header="⚙ Configure Keys &amp; Settings..." Click="OnOpenSettingsClick" FontWeight="Bold" />
+                <MenuItem Header="↺ Reset Metrics" Click="OnResetStatsClick" />
+                <Separator Background="#2F3652" />
+                <MenuItem Header="🔒 Lock Overlay (Click-Through)" Click="OnLockOverlayClick" />
+            </ContextMenu>
+        </Grid.ContextMenu>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" /> <!-- Edit Toolbar / Banner -->
-            <RowDefinition Height="Auto" /> <!-- Main Widget Card -->
+            <RowDefinition Height="*" />    <!-- Main Widget Card -->
         </Grid.RowDefinitions>
 
         <!-- EDIT MODE DRAG / CONTROL HEADER BAR -->
@@ -151,13 +159,17 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="12,0,0,0">
+                    <Button Content="⚙ Configure Keys"
+                            Style="{StaticResource EditModeButtonStyle}"
+                            BorderBrush="#00E5FF"
+                            Margin="0,0,6,0"
+                            Click="OnOpenSettingsClick" />
                     <Button Content="Reset Stats"
                             Style="{StaticResource EditModeButtonStyle}"
                             Margin="0,0,6,0"
                             Click="OnResetStatsClick" />
                     <Button Content="Lock Overlay"
                             Style="{StaticResource EditModeButtonStyle}"
-                            BorderBrush="#00E5FF"
                             Click="OnLockOverlayClick" />
                 </StackPanel>
             </Grid>

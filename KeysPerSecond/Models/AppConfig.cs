@@ -19,6 +19,15 @@ namespace KeysPerSecond.Models
 
         [JsonPropertyName("IsLocked")]
         public bool IsLocked { get; set; } = true;
+
+        public WindowConfig Clone() => new()
+        {
+            Left = this.Left,
+            Top = this.Top,
+            Scale = this.Scale,
+            Topmost = this.Topmost,
+            IsLocked = this.IsLocked
+        };
     }
 
     public class StyleConfig
@@ -67,6 +76,25 @@ namespace KeysPerSecond.Models
 
         [JsonPropertyName("Orientation")]
         public string Orientation { get; set; } = "Horizontal";
+
+        public StyleConfig Clone() => new()
+        {
+            AccentColor = this.AccentColor,
+            PressedColor = this.PressedColor,
+            BackgroundColor = this.BackgroundColor,
+            BackgroundOpacity = this.BackgroundOpacity,
+            BorderColor = this.BorderColor,
+            TextColor = this.TextColor,
+            KeyWidth = this.KeyWidth,
+            KeyHeight = this.KeyHeight,
+            KeySpacing = this.KeySpacing,
+            CornerRadius = this.CornerRadius,
+            ShowIndividualCounters = this.ShowIndividualCounters,
+            ShowKpsCounter = this.ShowKpsCounter,
+            ShowMaxKps = this.ShowMaxKps,
+            ShowTotalCounter = this.ShowTotalCounter,
+            Orientation = this.Orientation
+        };
     }
 
     public class AppConfig
@@ -91,5 +119,24 @@ namespace KeysPerSecond.Models
             new KeyBindingConfig { Key = "C", Label = "C", VirtualKey = 67, AccentColor = "#FF007F" },
             new KeyBindingConfig { Key = "V", Label = "V", VirtualKey = 86, AccentColor = "#FF007F" }
         };
+
+        public AppConfig Clone()
+        {
+            var clone = new AppConfig
+            {
+                Window = this.Window.Clone(),
+                Style = this.Style.Clone(),
+                ToggleEditModeKey = this.ToggleEditModeKey,
+                ResetStatsKey = this.ResetStatsKey,
+                TrackedKeys = new List<KeyBindingConfig>()
+            };
+
+            foreach (var key in this.TrackedKeys)
+            {
+                clone.TrackedKeys.Add(key.Clone());
+            }
+
+            return clone;
+        }
     }
 }

@@ -80,5 +80,60 @@ namespace KeysPerSecond.Tests
             vm.ToggleEditMode();
             Assert.False(vm.IsEditMode);
         }
+
+        [Fact]
+        public void AddTrackedKey_AddsNewKeyAndFiresEvent()
+        {
+            var config = new AppConfig();
+            var vm = new MainViewModel(config);
+            bool eventFired = false;
+            vm.ConfigurationApplied += () => eventFired = true;
+
+            vm.AddTrackedKey(new KeyBindingConfig { Key = "Space", Label = "SPC" });
+
+            Assert.True(eventFired);
+            Assert.Equal(5, vm.TrackedKeys.Count);
+            Assert.Equal("SPC", vm.TrackedKeys.Last().Label);
+            Assert.Equal(0x20, vm.TrackedKeys.Last().VirtualKey);
+        }
+
+        [Fact]
+        public void RemoveTrackedKey_RemovesKeyAndFiresEvent()
+        {
+            var config = new AppConfig();
+            var vm = new MainViewModel(config);
+            bool eventFired = false;
+            vm.ConfigurationApplied += () => eventFired = true;
+
+            var keyToRemove = vm.TrackedKeys[0];
+            bool removed = vm.RemoveTrackedKey(keyToRemove);
+
+            Assert.True(removed);
+            Assert.True(eventFired);
+            Assert.Equal(3, vm.TrackedKeys.Count);
+            Assert.DoesNotContain(keyToRemove, vm.TrackedKeys);
+        }
+
+        [Fact]
+        public void UpdateConfig_ReplacesConfigurationCompletely()
+        {
+            var config = new AppConfig();
+            var vm = new MainViewModel(config);
+            bool eventFired = false;
+            vm.ConfigurationApplied += () => eventFired = true;
+
+            var newConfig = new AppConfig();
+            newConfig.Style.AccentColor = "#ABCDEF";
+            newConfig.TrackedKeys.Clear();
+            newConfig.TrackedKeys.Add(new KeyBindingConfig { Key = "Q", Label = "Q", VirtualKey = 81 });
+
+            vm.UpdateConfig(newConfig);
+
+            Assert.True(eventFired);
+            Assert.Equal("#ABCDEF", vm.Config.Style.AccentColor);
+            Assert.Single(vm.TrackedKeys);
+            Assert.Equal(81, vm.TrackedKeys[0].VirtualKey);
+        }
     }
 }
+

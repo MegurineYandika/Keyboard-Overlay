@@ -43,3 +43,4 @@ namespace KeysPerSecond.Tests
         }
     }
 }
+

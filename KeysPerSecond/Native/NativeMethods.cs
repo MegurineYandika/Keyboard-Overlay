@@ -135,3 +135,4 @@ namespace KeysPerSecond.Native
         public RAWKEYBOARD Keyboard;
     }
 }
+

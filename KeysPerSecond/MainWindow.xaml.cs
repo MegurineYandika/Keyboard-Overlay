@@ -14,7 +14,7 @@ namespace KeysPerSecond
     public partial class MainWindow : Window
     {
         private readonly ConfigService _configService;
-        private readonly AppConfig _config;
+        private AppConfig _config;
         private readonly MainViewModel _viewModel;
         private RawInputService? _rawInputService;
         private IntPtr _hwnd;
@@ -138,6 +138,19 @@ namespace KeysPerSecond
             _config.Window.Top = this.Top;
             _config.Window.IsLocked = !_viewModel.IsEditMode;
             _configService.SaveConfig(_config);
+        }
+
+        private void OnOpenSettingsClick(object sender, RoutedEventArgs e)
+        {
+            var settingsWin = new SettingsWindow(_config, this);
+            if (settingsWin.ShowDialog() == true && settingsWin.ResultConfig != null)
+            {
+                _config = settingsWin.ResultConfig;
+                _viewModel.UpdateConfig(_config);
+                _rawInputService?.UpdateHotkeys(_config);
+                _rawInputService?.RebuildLookupTable();
+                _configService.SaveConfig(_config);
+            }
         }
 
         private void OnLockOverlayClick(object sender, RoutedEventArgs e)

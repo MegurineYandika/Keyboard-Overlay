@@ -16,6 +16,8 @@ namespace KeysPerSecond.ViewModels
         private bool _isEditMode;
         private AppConfig _config;
 
+        public event Action? ConfigurationApplied;
+
         public MainViewModel(AppConfig config)
         {
             _config = config;
@@ -78,6 +80,70 @@ namespace KeysPerSecond.ViewModels
 
                 TrackedKeys.Add(item);
             }
+        }
+
+        /// <summary>
+        /// Updates the entire active configuration and refreshes the overlay keys.
+        /// </summary>
+        public void UpdateConfig(AppConfig newConfig)
+        {
+            ConfigService.NormalizeConfig(newConfig);
+            Config = newConfig;
+            InitializeFromConfig(newConfig);
+            ConfigurationApplied?.Invoke();
+        }
+
+        /// <summary>
+        /// Adds a key binding dynamically to the tracked keys.
+        /// </summary>
+        public void AddTrackedKey(KeyBindingConfig keyConfig)
+        {
+            if (keyConfig.VirtualKey == 0)
+            {
+                keyConfig.VirtualKey = KeyToVkHelper.ResolveVirtualKey(keyConfig.Key);
+            }
+            if (string.IsNullOrWhiteSpace(keyConfig.Label))
+            {
+                keyConfig.Label = KeyToVkHelper.GetDefaultLabel(keyConfig.VirtualKey);
+            }
+            if (string.IsNullOrWhiteSpace(keyConfig.AccentColor))
+            {
+                keyConfig.AccentColor = _config.Style.AccentColor;
+            }
+
+            _config.TrackedKeys.Add(keyConfig);
+
+            double width = keyConfig.Width ?? _config.Style.KeyWidth;
+            double height = keyConfig.Height ?? _config.Style.KeyHeight;
+            var item = new KeyItemViewModel(
+                keyConfig.VirtualKey,
+                keyConfig.Key,
+                keyConfig.Label,
+                keyConfig.AccentColor,
+                width,
+                height);
+
+            TrackedKeys.Add(item);
+            ConfigurationApplied?.Invoke();
+        }
+
+        /// <summary>
+        /// Removes a key binding from tracking.
+        /// </summary>
+        public bool RemoveTrackedKey(KeyItemViewModel keyItem)
+        {
+            int index = TrackedKeys.IndexOf(keyItem);
+            if (index >= 0)
+            {
+                TrackedKeys.RemoveAt(index);
+                if (index < _config.TrackedKeys.Count)
+                {
+                    _config.TrackedKeys.RemoveAt(index);
+                }
+                ConfigurationApplied?.Invoke();
+                return true;
+            }
+            return false;
         }
 
         /// <summary>

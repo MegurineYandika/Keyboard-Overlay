@@ -6,10 +6,17 @@ A lightweight, ultra-low-latency Reactive Keyboard Overlay desktop application w
 
 ## 🚀 Key Features
 
+- **Interactive Configuration UI:**
+  - Full graphical Settings dialog (`SettingsWindow`) accessible via the Edit Mode toolbar or right-click context menu.
+  - **Add Keys**: Add any key by typing its name, selecting a Virtual Key code, or simply clicking **"Detect Key"** and pressing the physical key on your keyboard!
+  - **Delete & Reorder Keys**: Remove keys with `✕ Remove`, reorder keys with `▲` and `▼` buttons.
+  - **Quick Presets**: One-click setups for *osu! Standard (2K: Z, X)*, *osu!mania 4K (D, F, J, K)*, *osu!mania 7K (S, D, F, Space, J, K, L)*, *WASD*, and *Arrow Keys*.
+  - **Appearance & Styling**: Live sliders for Key Width, Height, Spacing, Corner Rounding, Background Opacity, Horizontal/Vertical orientation, and Color Palettes.
+  - **Instant Hot-Reload**: Changes apply immediately to the live overlay and are automatically saved to `config.json` without needing to restart the app.
 - **Win32 Raw Input (`WM_INPUT`) Engine:**
   - Bypasses slow `WH_KEYBOARD_LL` low-level hooks.
   - Uses `RegisterRawInputDevices` with `RIDEV_INPUTSINK` to capture background keyboard hardware events even when high-framerate fullscreen games hold foreground focus.
-  - Receives messages via a dedicated hidden `HwndSource` message listener.
+  - Dedicated message-only `HwndSource` listener window.
 - **Zero-Allocation Hot Path:**
   - Uses `stackalloc Span<byte>` inside the `WM_INPUT` message loop to read raw input data without heap allocations.
   - Zero-boxing `O(1)` byte array lookup table (`_lookupTable[vkey]`) for dispatching key state changes.
@@ -48,9 +55,12 @@ KeysPerSecond/
 │   ├── ViewModels/
 │   │   ├── ObservableObject.cs         # Lightweight INotifyPropertyChanged base
 │   │   ├── KeyItemViewModel.cs         # Per-key reactive visual state & press counters
-│   │   └── MainViewModel.cs            # Session state: CurrentKps, MaxKps, TotalPresses, EditMode
+│   │   ├── MainViewModel.cs            # Session state: CurrentKps, MaxKps, TotalPresses, EditMode
+│   │   └── SettingsViewModel.cs        # Settings dialog state: key editor, presets, sliders
 │   ├── Converters/
 │   │   └── CommonConverters.cs         # XAML converters (KpsToWidth, Orientation, Brushes)
+│   ├── SettingsWindow.xaml             # Configuration UI: add/delete keys, sizes, colors, presets
+│   ├── SettingsWindow.xaml.cs          # Settings code-behind & key detection capture
 │   ├── MainWindow.xaml                 # Modern HUD overlay view with neon glow & key cards
 │   ├── MainWindow.xaml.cs              # Window lifecycle, Win32 exStyles & render hook
 │   └── config.json                     # Default runtime configuration
@@ -59,17 +69,26 @@ KeysPerSecond/
 │   ├── KeyToVkHelperTests.cs           # Virtual Key parsing tests
 │   ├── ConfigServiceTests.cs           # Serialization & normalization tests
 │   ├── NativeStructLayoutTests.cs      # Win32 struct memory layout verification
-│   ├── MainViewModelTests.cs           # State updates & reset tests
-│   ├── RawInputServiceTests.cs         # Input dispatch, repeat filtering & hotkey tests
-│   └── WindowLifecycleTests.cs         # STA thread window initialization verification
+│   ├── MainViewModelTests.cs           # Tests for stats updates, add/remove keys & reset
+│   ├── RawInputServiceTests.cs         # Input dispatch, repeat filtering & dynamic table tests
+│   ├── SettingsViewModelTests.cs       # Tests for adding, deleting, reordering & presets
+│   ├── WindowLifecycleTests.cs         # STA thread window initialization verification
+│   └── WpfTestHelper.cs                # Thread-safe test helper for WPF Application instances
 └── KeysPerSecond.sln
 ```
 
 ---
 
-## ⚙️ Configuration (`config.json`)
+## ⚙️ Configuration & GUI Settings
 
-The application loads `config.json` automatically on startup. If missing, it will generate a default configuration:
+You can configure the application in two ways:
+1. **In-App Graphical Settings UI**:
+   - Press **`Ctrl + Shift + F10`** to enter Edit Mode.
+   - Click **`⚙ Configure Keys`** in the top bar (or right-click the overlay and choose *Configure Keys & Settings...*).
+   - Use the UI to add/delete keys, detect keypresses, select color swatches, or apply presets.
+   - Click **`Save & Apply Changes`**.
+2. **Via `config.json`**:
+   - Modify `config.json` directly. Changes persist automatically.
 
 ```json
 {
@@ -108,41 +127,17 @@ The application loads `config.json` automatically on startup. If missing, it wil
 }
 ```
 
-### Key Mapping Examples
-- **osu! Standard (2 Keys):**
-  ```json
-  "TrackedKeys": [
-    { "Key": "Z", "Label": "Z", "AccentColor": "#00E5FF" },
-    { "Key": "X", "Label": "X", "AccentColor": "#FF007F" }
-  ]
-  ```
-- **osu!mania 7K (S, D, F, Space, J, K, L):**
-  ```json
-  "TrackedKeys": [
-    { "Key": "S" }, { "Key": "D" }, { "Key": "F" },
-    { "Key": "Space", "Label": "SPC", "Width": 90 },
-    { "Key": "J" }, { "Key": "K" }, { "Key": "L" }
-  ]
-  ```
-
 ---
 
 ## 🏃 Quick Start
 
-### Prerequisites
-- Windows 10 / 11 (x64 / x86)
-- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) or higher
-
 ### Build & Run
 ```powershell
-# Clone and enter workspace
-cd d:\KeysPerSecond
-
 # Run the overlay
 dotnet run --project KeysPerSecond
 ```
 
-### Run Tests
+### Run Test Suite (63 Unit Tests)
 ```powershell
 dotnet test
 ```
@@ -153,6 +148,7 @@ dotnet test
 
 | Shortcut | Action | Description |
 |---|---|---|
-| `Ctrl + Shift + F10` | **Toggle Edit / Drag Mode** | Toggles click-through off, displaying the draggable frame and control toolbar. Press again to lock into click-through mode. |
+| `Ctrl + Shift + F10` | **Toggle Edit / Drag Mode** | Toggles click-through off, displaying the draggable frame, `⚙ Configure Keys` button, and control toolbar. Press again to lock into click-through mode. |
 | `Ctrl + Shift + R` | **Reset Metrics** | Resets KPS, Max KPS, and individual key stroke counters. |
 | `Left Click + Drag` *(in Edit Mode)* | **Reposition Window** | Move the overlay anywhere on your screens. The new coordinates are automatically saved to `config.json`. |
+| `Right Click` *(in Edit Mode)* | **Context Menu** | Quick access to Settings, Reset Metrics, and Lock Overlay. |

@@ -139,5 +139,53 @@ namespace KeysPerSecond.Tests
 
             Assert.True(resetTriggered);
         }
+
+        [Fact]
+        public void DynamicKeyAdditionAndDeletion_UpdatesRawInputLookupTable()
+        {
+            var config = new AppConfig();
+            config.TrackedKeys = new()
+            {
+                new KeyBindingConfig { Key = "Z", Label = "Z", VirtualKey = 90 },
+                new KeyBindingConfig { Key = "X", Label = "X", VirtualKey = 88 }
+            };
+
+            var vm = new MainViewModel(config);
+            var service = new RawInputService(vm, () => { }, () => { });
+
+            // 1. Initially only Z (90) and X (88) are tracked.
+            // Pressing C (67) should have no effect.
+            service.SimulateRawKeyEvent(67, isDown: true);
+            Assert.Equal(0, vm.TotalPresses);
+
+            // 2. Add 'C' dynamically
+            vm.AddTrackedKey(new KeyBindingConfig { Key = "C", Label = "C", VirtualKey = 67 });
+            service.RebuildLookupTable();
+
+            // Press 'C' now
+            service.SimulateRawKeyEvent(67, isDown: true);
+            Assert.Equal(1, vm.TotalPresses);
+            var keyC = vm.TrackedKeys.First(k => k.VirtualKey == 67);
+            Assert.Equal(1, keyC.TotalPresses);
+            Assert.True(keyC.IsPressed);
+
+            service.SimulateRawKeyEvent(67, isDown: false);
+            Assert.False(keyC.IsPressed);
+
+            // 3. Remove 'Z' dynamically
+            var keyZ = vm.TrackedKeys.First(k => k.VirtualKey == 90);
+            vm.RemoveTrackedKey(keyZ);
+            service.RebuildLookupTable();
+
+            // Press 'Z' now -> should NOT increment
+            service.SimulateRawKeyEvent(90, isDown: true);
+            Assert.Equal(1, vm.TotalPresses); // Still 1!
+
+            // Press 'C' again -> increments
+            service.SimulateRawKeyEvent(67, isDown: true);
+            Assert.Equal(2, vm.TotalPresses);
+            Assert.Equal(2, keyC.TotalPresses);
+        }
     }
 }
+
