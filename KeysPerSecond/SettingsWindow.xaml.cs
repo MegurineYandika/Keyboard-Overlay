@@ -101,6 +101,29 @@ namespace KeysPerSecond
             }
         }
 
+        private void OnScalePresetClick(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string tagStr &&
+                double.TryParse(tagStr, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double scale))
+            {
+                _viewModel.SetScale(scale);
+            }
+        }
+
+        private void OnExitAppClick(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show(
+                "Are you sure you want to exit KeysPerSecond?",
+                "Exit Overlay",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                Application.Current.Shutdown();
+            }
+        }
+
         private void OnCancelClick(object sender, RoutedEventArgs e)
         {
             this.DialogResult = false;
@@ -115,3 +138,4 @@ namespace KeysPerSecond
         }
     }
 }
+

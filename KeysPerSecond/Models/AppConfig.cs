@@ -14,6 +14,15 @@ namespace KeysPerSecond.Models
         [JsonPropertyName("Scale")]
         public double Scale { get; set; } = 1.0;
 
+        [JsonPropertyName("CustomWidth")]
+        public double CustomWidth { get; set; } = 0.0;
+
+        [JsonPropertyName("CustomHeight")]
+        public double CustomHeight { get; set; } = 0.0;
+
+        [JsonPropertyName("AutoFit")]
+        public bool AutoFit { get; set; } = true;
+
         [JsonPropertyName("Topmost")]
         public bool Topmost { get; set; } = true;
 
@@ -25,6 +34,9 @@ namespace KeysPerSecond.Models
             Left = this.Left,
             Top = this.Top,
             Scale = this.Scale,
+            CustomWidth = this.CustomWidth,
+            CustomHeight = this.CustomHeight,
+            AutoFit = this.AutoFit,
             Topmost = this.Topmost,
             IsLocked = this.IsLocked
         };

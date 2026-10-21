@@ -85,6 +85,47 @@ namespace KeysPerSecond.ViewModels
             set => SetProperty(ref _captureStatus, value);
         }
 
+        // Window Dimensions & Scaling
+        private double _windowScale;
+        private double _customWidth;
+        private double _customHeight;
+        private bool _autoFit;
+
+        public double WindowScale
+        {
+            get => _windowScale;
+            set => SetProperty(ref _windowScale, Math.Round(value, 2));
+        }
+
+        public double CustomWidth
+        {
+            get => _customWidth;
+            set => SetProperty(ref _customWidth, Math.Round(value, 0));
+        }
+
+        public double CustomHeight
+        {
+            get => _customHeight;
+            set => SetProperty(ref _customHeight, Math.Round(value, 0));
+        }
+
+        public bool AutoFit
+        {
+            get => _autoFit;
+            set => SetProperty(ref _autoFit, value);
+        }
+
+        public bool IsCustomSize
+        {
+            get => !_autoFit;
+            set => AutoFit = !value;
+        }
+
+        public void SetScale(double scale)
+        {
+            WindowScale = Math.Clamp(scale, 0.4, 3.5);
+        }
+
         // Appearance & Style
         private string _accentColor;
         private string _pressedColor;
@@ -221,6 +262,11 @@ namespace KeysPerSecond.ViewModels
 
             Keys = new ObservableCollection<KeyBindingConfig>(
                 config.TrackedKeys.Select(k => k.Clone()));
+
+            _windowScale = config.Window.Scale > 0 ? config.Window.Scale : 1.0;
+            _customWidth = config.Window.CustomWidth;
+            _customHeight = config.Window.CustomHeight;
+            _autoFit = config.Window.AutoFit;
 
             _accentColor = config.Style.AccentColor;
             _pressedColor = config.Style.PressedColor;
@@ -363,6 +409,11 @@ namespace KeysPerSecond.ViewModels
         {
             var result = _originalConfig.Clone();
 
+            result.Window.Scale = WindowScale;
+            result.Window.CustomWidth = CustomWidth;
+            result.Window.CustomHeight = CustomHeight;
+            result.Window.AutoFit = AutoFit;
+
             result.TrackedKeys = Keys.Select(k => k.Clone()).ToList();
 
             result.Style.AccentColor = AccentColor;
@@ -385,3 +436,4 @@ namespace KeysPerSecond.ViewModels
         }
     }
 }
+

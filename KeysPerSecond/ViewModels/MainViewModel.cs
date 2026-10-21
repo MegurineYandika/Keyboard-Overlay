@@ -53,6 +53,63 @@ namespace KeysPerSecond.ViewModels
             set => SetProperty(ref _totalPresses, value);
         }
 
+        public double WindowScale
+        {
+            get => _config.Window.Scale;
+            set
+            {
+                double clamped = Math.Clamp(Math.Round(value, 2), 0.4, 3.5);
+                if (Math.Abs(_config.Window.Scale - clamped) > 0.001)
+                {
+                    _config.Window.Scale = clamped;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(Config));
+                }
+            }
+        }
+
+        public double CustomWidth
+        {
+            get => _config.Window.CustomWidth;
+            set
+            {
+                if (Math.Abs(_config.Window.CustomWidth - value) > 0.1)
+                {
+                    _config.Window.CustomWidth = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(Config));
+                }
+            }
+        }
+
+        public double CustomHeight
+        {
+            get => _config.Window.CustomHeight;
+            set
+            {
+                if (Math.Abs(_config.Window.CustomHeight - value) > 0.1)
+                {
+                    _config.Window.CustomHeight = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(Config));
+                }
+            }
+        }
+
+        public bool AutoFit
+        {
+            get => _config.Window.AutoFit;
+            set
+            {
+                if (_config.Window.AutoFit != value)
+                {
+                    _config.Window.AutoFit = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(Config));
+                }
+            }
+        }
+
         public bool IsEditMode
         {
             get => _isEditMode;

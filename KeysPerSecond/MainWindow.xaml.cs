@@ -29,6 +29,7 @@ namespace KeysPerSecond
             // Set initial window position
             this.Left = _config.Window.Left;
             this.Top = _config.Window.Top;
+            ApplyWindowDimensions(_config);
 
             _viewModel = new MainViewModel(_config);
             this.DataContext = _viewModel;
@@ -124,6 +125,16 @@ namespace KeysPerSecond
             }
         }
 
+        private void OnRootMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (_viewModel.IsEditMode)
+            {
+                double step = e.Delta > 0 ? 0.05 : -0.05;
+                _viewModel.WindowScale = Math.Clamp(_viewModel.WindowScale + step, 0.4, 3.5);
+                SaveCurrentWindowConfig();
+            }
+        }
+
         private void OnLocationChanged(object? sender, EventArgs e)
         {
             if (_viewModel.IsEditMode)
@@ -132,11 +143,33 @@ namespace KeysPerSecond
             }
         }
 
+        private void ApplyWindowDimensions(AppConfig config)
+        {
+            if (!config.Window.AutoFit && config.Window.CustomWidth > 60 && config.Window.CustomHeight > 60)
+            {
+                this.SizeToContent = SizeToContent.Manual;
+                this.Width = config.Window.CustomWidth;
+                this.Height = config.Window.CustomHeight;
+            }
+            else
+            {
+                this.SizeToContent = SizeToContent.WidthAndHeight;
+            }
+        }
+
         private void SaveCurrentWindowConfig()
         {
             _config.Window.Left = this.Left;
             _config.Window.Top = this.Top;
+            _config.Window.Scale = _viewModel.WindowScale;
             _config.Window.IsLocked = !_viewModel.IsEditMode;
+
+            if (!_config.Window.AutoFit && this.ActualWidth > 60 && this.ActualHeight > 60)
+            {
+                _config.Window.CustomWidth = this.ActualWidth;
+                _config.Window.CustomHeight = this.ActualHeight;
+            }
+
             _configService.SaveConfig(_config);
         }
 
@@ -146,11 +179,17 @@ namespace KeysPerSecond
             if (settingsWin.ShowDialog() == true && settingsWin.ResultConfig != null)
             {
                 _config = settingsWin.ResultConfig;
+                ApplyWindowDimensions(_config);
                 _viewModel.UpdateConfig(_config);
                 _rawInputService?.UpdateHotkeys(_config);
                 _rawInputService?.RebuildLookupTable();
                 _configService.SaveConfig(_config);
             }
+        }
+
+        private void OnExitAppClick(object sender, RoutedEventArgs e)
+        {
+            this.Close();
         }
 
         private void OnLockOverlayClick(object sender, RoutedEventArgs e)

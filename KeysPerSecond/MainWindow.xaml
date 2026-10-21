@@ -102,13 +102,15 @@
     </Window.Resources>
 
     <!-- Root Grid -->
-    <Grid Margin="12" MouseLeftButtonDown="OnRootMouseLeftButtonDown">
+    <Grid Margin="12" MouseLeftButtonDown="OnRootMouseLeftButtonDown" MouseWheel="OnRootMouseWheel">
         <Grid.ContextMenu>
             <ContextMenu Background="#161928" Foreground="#E2E8F0" BorderBrush="#2F3652">
                 <MenuItem Header="⚙ Configure Keys &amp; Settings..." Click="OnOpenSettingsClick" FontWeight="Bold" />
                 <MenuItem Header="↺ Reset Metrics" Click="OnResetStatsClick" />
                 <Separator Background="#2F3652" />
                 <MenuItem Header="🔒 Lock Overlay (Click-Through)" Click="OnLockOverlayClick" />
+                <Separator Background="#2F3652" />
+                <MenuItem Header="✕ Exit Application" Click="OnExitAppClick" Foreground="#FF6090" />
             </ContextMenu>
         </Grid.ContextMenu>
         <Grid.RowDefinitions>
@@ -140,7 +142,18 @@
                                    Foreground="#0B0D17"
                                    FontFamily="Segoe UI, sans-serif" />
                     </Border>
-                    <TextBlock Text="Drag window to reposition • Press "
+                    <TextBlock Text="Drag to move • Scroll to scale ("
+                               Foreground="#B0B8C8"
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               FontFamily="Segoe UI, sans-serif" />
+                    <TextBlock Text="{Binding WindowScale, StringFormat='{}{0:P0}'}"
+                               Foreground="#00E5FF"
+                               FontWeight="Bold"
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               FontFamily="Segoe UI, sans-serif" />
+                    <TextBlock Text=") • Press "
                                Foreground="#B0B8C8"
                                FontSize="11"
                                VerticalAlignment="Center"
@@ -170,7 +183,13 @@
                             Click="OnResetStatsClick" />
                     <Button Content="Lock Overlay"
                             Style="{StaticResource EditModeButtonStyle}"
+                            Margin="0,0,6,0"
                             Click="OnLockOverlayClick" />
+                    <Button Content="✕ Exit"
+                            Style="{StaticResource EditModeButtonStyle}"
+                            BorderBrush="#FF007F"
+                            Foreground="#FF6090"
+                            Click="OnExitAppClick" />
                 </StackPanel>
             </Grid>
         </Border>
@@ -182,6 +201,9 @@
                 BorderThickness="1.5"
                 Padding="14"
                 Effect="{StaticResource SubtleShadow}">
+            <Border.LayoutTransform>
+                <ScaleTransform ScaleX="{Binding WindowScale}" ScaleY="{Binding WindowScale}" />
+            </Border.LayoutTransform>
             <!-- Dynamic Background based on config opacity -->
             <Border.Background>
                 <SolidColorBrush Color="#12131C" Opacity="{Binding Config.Style.BackgroundOpacity}" />

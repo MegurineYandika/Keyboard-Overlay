@@ -134,6 +134,43 @@ namespace KeysPerSecond.Tests
             Assert.Single(vm.TrackedKeys);
             Assert.Equal(81, vm.TrackedKeys[0].VirtualKey);
         }
+        [Fact]
+        public void WindowScale_ClampsAndUpdatesConfig()
+        {
+            var config = new AppConfig();
+            var vm = new MainViewModel(config);
+
+            Assert.Equal(1.0, vm.WindowScale);
+
+            vm.WindowScale = 1.75;
+            Assert.Equal(1.75, vm.WindowScale);
+            Assert.Equal(1.75, vm.Config.Window.Scale);
+
+            // Test clamping min
+            vm.WindowScale = 0.1;
+            Assert.Equal(0.4, vm.WindowScale);
+
+            // Test clamping max
+            vm.WindowScale = 5.0;
+            Assert.Equal(3.5, vm.WindowScale);
+        }
+
+        [Fact]
+        public void CustomDimensionsAndAutoFit_UpdateConfig()
+        {
+            var config = new AppConfig();
+            var vm = new MainViewModel(config);
+
+            Assert.True(vm.AutoFit);
+
+            vm.AutoFit = false;
+            vm.CustomWidth = 600;
+            vm.CustomHeight = 250;
+
+            Assert.False(vm.Config.Window.AutoFit);
+            Assert.Equal(600, vm.Config.Window.CustomWidth);
+            Assert.Equal(250, vm.Config.Window.CustomHeight);
+        }
     }
 }
 

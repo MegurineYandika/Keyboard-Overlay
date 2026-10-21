@@ -125,6 +125,32 @@ namespace KeysPerSecond.Tests
         }
 
         [Fact]
+        public void WindowScalingAndDimensions_UpdateAndBuildAccurately()
+        {
+            var config = new AppConfig();
+            var vm = new SettingsViewModel(config);
+
+            Assert.Equal(1.0, vm.WindowScale);
+            Assert.True(vm.AutoFit);
+
+            // Change scale
+            vm.SetScale(1.5);
+            Assert.Equal(1.5, vm.WindowScale);
+
+            // Change custom dimensions
+            vm.AutoFit = false;
+            vm.CustomWidth = 520;
+            vm.CustomHeight = 220;
+
+            var result = vm.BuildResultConfig();
+
+            Assert.Equal(1.5, result.Window.Scale);
+            Assert.False(result.Window.AutoFit);
+            Assert.Equal(520, result.Window.CustomWidth);
+            Assert.Equal(220, result.Window.CustomHeight);
+        }
+
+        [Fact]
         public void BuildResultConfig_ReflectsAllModifications()
         {
             var config = new AppConfig();
