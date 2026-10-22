@@ -161,7 +161,18 @@ namespace KeysPerSecond.ViewModels
         public double KeyWidth
         {
             get => _keyWidth;
-            set => SetProperty(ref _keyWidth, Math.Round(value, 0));
+            set
+            {
+                if (SetProperty(ref _keyWidth, Math.Round(value, 0)))
+                {
+                    OnPropertyChanged(nameof(CurrentKeysWidth));
+                    OnPropertyChanged(nameof(CalculatedPatternHeight));
+                    if (_matchPatternRatio)
+                    {
+                        WaterfallHeight = CalculatedPatternHeight;
+                    }
+                }
+            }
         }
 
         public double KeyHeight
@@ -363,6 +374,61 @@ namespace KeysPerSecond.ViewModels
             set => SetProperty(ref _waterfallHeight, Math.Round(value, 0));
         }
 
+        private bool _transparentMode;
+        private bool _matchPatternRatio;
+
+        public bool TransparentMode
+        {
+            get => _transparentMode;
+            set => SetProperty(ref _transparentMode, value);
+        }
+
+        public bool MatchPatternRatio
+        {
+            get => _matchPatternRatio;
+            set
+            {
+                if (SetProperty(ref _matchPatternRatio, value) && value)
+                {
+                    WaterfallHeight = CalculatedPatternHeight;
+                }
+            }
+        }
+
+        public double CurrentKeysWidth => CalculateTotalKeysWidth();
+
+        public double CalculatedPatternHeight => Math.Round(CalculateTotalKeysWidth() * 2.0, 0);
+
+        public double CalculateTotalKeysWidth()
+        {
+            double total = 0;
+            if (Keys != null && Keys.Count > 0)
+            {
+                foreach (var k in Keys)
+                {
+                    double w = k.Width ?? KeyWidth;
+                    total += w + 8.0;
+                }
+            }
+            else
+            {
+                total = KeyWidth * 4.0 + 32.0;
+            }
+            return Math.Max(40.0, total);
+        }
+
+        public void ApplyPatternHeightPreset()
+        {
+            WaterfallHeight = CalculatedPatternHeight;
+        }
+
+        public void ApplyTransparentPatternPreset()
+        {
+            WaterfallEnabled = true;
+            TransparentMode = true;
+            WaterfallHeight = CalculatedPatternHeight;
+        }
+
         public string ToggleEditModeKey
         {
             get => _toggleEditModeKey;
@@ -416,6 +482,13 @@ namespace KeysPerSecond.ViewModels
             _waterfallCornerRadius = wf.BarCornerRadius >= 0 ? wf.BarCornerRadius : 4.0;
             _waterfallUseKeyAccentColors = wf.UseKeyAccentColors;
             _waterfallHeight = wf.Height > 0 ? wf.Height : 200.0;
+            _transparentMode = wf.TransparentMode;
+            _matchPatternRatio = wf.MatchPatternRatio;
+
+            if (_matchPatternRatio)
+            {
+                _waterfallHeight = CalculatedPatternHeight;
+            }
 
             _inputAccentColor = config.Style.AccentColor;
         }
@@ -456,6 +529,7 @@ namespace KeysPerSecond.ViewModels
 
             Keys.Add(newKey);
             SelectedKey = newKey;
+            OnKeysStructureChanged();
             return true;
         }
 
@@ -467,6 +541,7 @@ namespace KeysPerSecond.ViewModels
             {
                 SelectedKey = Keys.LastOrDefault();
             }
+            OnKeysStructureChanged();
         }
 
         public void MoveKeyUp(KeyBindingConfig? key)
@@ -533,6 +608,18 @@ namespace KeysPerSecond.ViewModels
                     Keys.Add(new KeyBindingConfig { Key = "Right", Label = "→", VirtualKey = 0x27, AccentColor = "#FF007F" });
                     break;
             }
+
+            OnKeysStructureChanged();
+        }
+
+        private void OnKeysStructureChanged()
+        {
+            OnPropertyChanged(nameof(CurrentKeysWidth));
+            OnPropertyChanged(nameof(CalculatedPatternHeight));
+            if (_matchPatternRatio)
+            {
+                WaterfallHeight = CalculatedPatternHeight;
+            }
         }
 
         /// <summary>
@@ -577,6 +664,8 @@ namespace KeysPerSecond.ViewModels
             result.Waterfall.BarCornerRadius = WaterfallCornerRadius;
             result.Waterfall.UseKeyAccentColors = WaterfallUseKeyAccentColors;
             result.Waterfall.Height = WaterfallHeight;
+            result.Waterfall.TransparentMode = TransparentMode;
+            result.Waterfall.MatchPatternRatio = MatchPatternRatio;
 
             return result;
         }

@@ -38,7 +38,9 @@
     "BarOpacity": 0.75,
     "BarCornerRadius": 4.0,
     "UseKeyAccentColors": true,
-    "Height": 200.0
+    "Height": 200.0,
+    "TransparentMode": false,
+    "MatchPatternRatio": false
   },
   "ToggleEditModeKey": "Ctrl+Shift+F10",
   "ResetStatsKey": "Ctrl+Shift+R",

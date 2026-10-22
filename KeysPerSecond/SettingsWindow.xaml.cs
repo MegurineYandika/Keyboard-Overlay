@@ -97,8 +97,26 @@ namespace KeysPerSecond
         {
             if (sender is Button btn && btn.Tag is string presetId)
             {
-                _viewModel.ApplyPreset(presetId);
+                if (presetId == "mania_pattern")
+                {
+                    _viewModel.ApplyPreset("osu_4k");
+                    _viewModel.ApplyTransparentPatternPreset();
+                }
+                else
+                {
+                    _viewModel.ApplyPreset(presetId);
+                }
             }
+        }
+
+        private void OnApplyPatternPresetClick(object sender, RoutedEventArgs e)
+        {
+            _viewModel.ApplyPatternHeightPreset();
+        }
+
+        private void OnApplyTransparentPatternComboClick(object sender, RoutedEventArgs e)
+        {
+            _viewModel.ApplyTransparentPatternPreset();
         }
 
         private void OnScalePresetClick(object sender, RoutedEventArgs e)

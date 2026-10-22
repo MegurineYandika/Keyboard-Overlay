@@ -29,6 +29,12 @@ namespace KeysPerSecond.Models
         [JsonPropertyName("Height")]
         public double Height { get; set; } = 200.0;
 
+        [JsonPropertyName("TransparentMode")]
+        public bool TransparentMode { get; set; } = false;
+
+        [JsonPropertyName("MatchPatternRatio")]
+        public bool MatchPatternRatio { get; set; } = false;
+
         public WaterfallConfig Clone() => new()
         {
             IsEnabled = this.IsEnabled,
@@ -38,7 +44,10 @@ namespace KeysPerSecond.Models
             BarOpacity = this.BarOpacity,
             BarCornerRadius = this.BarCornerRadius,
             UseKeyAccentColors = this.UseKeyAccentColors,
-            Height = this.Height
+            Height = this.Height,
+            TransparentMode = this.TransparentMode,
+            MatchPatternRatio = this.MatchPatternRatio
         };
     }
 }
+

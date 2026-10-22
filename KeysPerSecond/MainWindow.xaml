@@ -100,6 +100,33 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- Main Overlay Container Style (handles Transparent Waterfall Mode) -->
+        <Style x:Key="MainOverlayContainerBorderStyle" TargetType="Border">
+            <Setter Property="CornerRadius" Value="{Binding Config.Style.CornerRadius}" />
+            <Setter Property="BorderBrush" Value="{Binding Config.Style.BorderColor, Converter={StaticResource StringToBrush}}" />
+            <Setter Property="BorderThickness" Value="1.5" />
+            <Setter Property="Padding" Value="14" />
+            <Setter Property="Effect" Value="{StaticResource SubtleShadow}" />
+            <Setter Property="Background">
+                <Setter.Value>
+                    <SolidColorBrush Color="#12131C" Opacity="{Binding Config.Style.BackgroundOpacity}" />
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Config.Waterfall.IsEnabled}" Value="True" />
+                        <Condition Binding="{Binding Config.Waterfall.TransparentMode}" Value="True" />
+                        <Condition Binding="{Binding IsEditMode}" Value="False" />
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="BorderBrush" Value="Transparent" />
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="Effect" Value="{x:Null}" />
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
     <!-- Root Grid -->
@@ -196,19 +223,10 @@
         </Border>
 
         <!-- MAIN OVERLAY WIDGET CONTAINER -->
-        <Border Grid.Row="1"
-                CornerRadius="{Binding Config.Style.CornerRadius}"
-                BorderBrush="{Binding Config.Style.BorderColor, Converter={StaticResource StringToBrush}}"
-                BorderThickness="1.5"
-                Padding="14"
-                Effect="{StaticResource SubtleShadow}">
+        <Border Grid.Row="1" Style="{StaticResource MainOverlayContainerBorderStyle}">
             <Border.LayoutTransform>
                 <ScaleTransform ScaleX="{Binding WindowScale}" ScaleY="{Binding WindowScale}" />
             </Border.LayoutTransform>
-            <!-- Dynamic Background based on config opacity -->
-            <Border.Background>
-                <SolidColorBrush Color="#12131C" Opacity="{Binding Config.Style.BackgroundOpacity}" />
-            </Border.Background>
 
             <!-- Edit mode draggable border outline -->
             <Grid>
@@ -230,8 +248,14 @@
                 <StackPanel Orientation="Vertical">
 
                     <!-- METRICS / STATS BAR -->
-                    <Grid Margin="0,0,0,12"
-                          Visibility="{Binding Config.Style.ShowKpsCounter, Converter={StaticResource BoolToVis}}">
+                    <Border CornerRadius="8"
+                            Background="#EE121422"
+                            BorderBrush="#262C46"
+                            BorderThickness="1"
+                            Padding="8,4"
+                            Margin="0,0,0,12"
+                            Visibility="{Binding Config.Style.ShowKpsCounter, Converter={StaticResource BoolToVis}}">
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
@@ -325,6 +349,7 @@
                             </Border>
                         </StackPanel>
                     </Grid>
+                    </Border>
 
                     <!-- KEYS AND PIANO ROLL WATERFALL VISUALIZER LAYER -->
                     <Grid HorizontalAlignment="Left">

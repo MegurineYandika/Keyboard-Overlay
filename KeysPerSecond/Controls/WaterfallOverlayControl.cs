@@ -32,6 +32,8 @@ namespace KeysPerSecond.Controls
         private bool _isEnabled = true;
         private bool _isUpscroll = true;
         private bool _isEditMode = false;
+        private bool _transparentMode = false;
+        private bool _matchPatternRatio = false;
         private double _scrollSpeed = 0.8;
         private double _pixelsPerTick = 0.0;
         private double _cornerRadius = 4.0;
@@ -85,6 +87,8 @@ namespace KeysPerSecond.Controls
             var wf = _config.Waterfall;
             _isEnabled = wf.IsEnabled;
             _isUpscroll = !string.Equals(wf.ScrollDirection, "Downscroll", StringComparison.OrdinalIgnoreCase);
+            _transparentMode = wf.TransparentMode;
+            _matchPatternRatio = wf.MatchPatternRatio;
             _scrollSpeed = Math.Max(0.05, wf.ScrollSpeed);
             _cornerRadius = Math.Max(0.0, wf.BarCornerRadius);
             _maxVisibleDurationMs = Math.Max(100.0, wf.MaxVisibleDurationMs);
@@ -155,7 +159,18 @@ namespace KeysPerSecond.Controls
 
             // Sync control width with the total keys width
             this.Width = Math.Max(40.0, currentX);
-            this.Height = Math.Max(40.0, wf.Height);
+
+            if (_matchPatternRatio)
+            {
+                // Preset / Pattern aspect ratio: Height is twice of width
+                double patternHeight = Math.Max(80.0, currentX * 2.0);
+                wf.Height = patternHeight;
+                this.Height = patternHeight;
+            }
+            else
+            {
+                this.Height = Math.Max(40.0, wf.Height);
+            }
 
             InvalidateVisual();
         }
@@ -177,8 +192,8 @@ namespace KeysPerSecond.Controls
             // Cull offscreen notes past visible horizon
             _buffer.CullExpiredNotes(now, _maxVisibleDurationTicks);
 
-            // Render subtle lane tracks
-            if (_laneBackgroundBrush != null)
+            // Render subtle lane tracks (omitted in transparency mode for clean game overlay)
+            if (!_transparentMode && _laneBackgroundBrush != null)
             {
                 for (int col = 0; col < _columns.Length; col++)
                 {
@@ -324,3 +339,4 @@ namespace KeysPerSecond.Controls
         }
     }
 }
+

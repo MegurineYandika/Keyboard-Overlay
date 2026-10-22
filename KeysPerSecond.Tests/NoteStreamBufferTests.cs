@@ -217,7 +217,9 @@ namespace KeysPerSecond.Tests
                 BarOpacity = 0.9,
                 BarCornerRadius = 6.0,
                 UseKeyAccentColors = false,
-                Height = 250.0
+                Height = 250.0,
+                TransparentMode = true,
+                MatchPatternRatio = true
             };
 
             var clone = original.Clone();
@@ -230,6 +232,8 @@ namespace KeysPerSecond.Tests
             Assert.Equal(original.BarCornerRadius, clone.BarCornerRadius);
             Assert.Equal(original.UseKeyAccentColors, clone.UseKeyAccentColors);
             Assert.Equal(original.Height, clone.Height);
+            Assert.True(clone.TransparentMode);
+            Assert.True(clone.MatchPatternRatio);
 
             clone.ScrollSpeed = 0.5;
             Assert.NotEqual(original.ScrollSpeed, clone.ScrollSpeed);
@@ -267,3 +271,4 @@ namespace KeysPerSecond.Tests
         }
     }
 }
+

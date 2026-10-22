@@ -39,3 +39,4 @@ namespace KeysPerSecond.Models
             GetDurationTicks(currentTimestamp) * 1000.0 / Stopwatch.Frequency;
     }
 }
+
