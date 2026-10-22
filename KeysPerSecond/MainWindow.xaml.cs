@@ -66,6 +66,7 @@ namespace KeysPerSecond
         {
             long now = Stopwatch.GetTimestamp();
             _viewModel.UpdateKps(now);
+            _viewModel.UpdateHoldAnimations(now);
         }
 
         /// <summary>

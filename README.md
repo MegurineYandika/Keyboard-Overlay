@@ -6,6 +6,11 @@ A lightweight, ultra-low-latency Reactive Keyboard Overlay desktop application w
 
 ## 🚀 Key Features
 
+- **Keypress Duration & Hold Time Bar Animation:**
+  - **Live Millisecond Hold Timer**: Displays how long each key is held down in real-time (`42ms`, `85ms`, `130ms`...).
+  - **Animated Hold Bar**: A glowing visual progress bar expands across each key proportional to hold time, giving rhythm gamers instant visual feedback on tap lengths and slider holds.
+  - **Post-Release Tap Timing Retention**: When a key is released, the bar freezes at the exact tap length and smoothly fades out over a customizable decay window (default 600ms), allowing players to inspect their tap precision and timing without it vanishing instantly.
+  - **Configurable Benchmark & Fade**: Customize the 100% full bar benchmark (100ms–1000ms) and fade-out retention duration via the Settings UI.
 - **Scalable UI & Custom Window Dimensions:**
   - **Vector Scale Slider & Presets**: Zoom the entire overlay from 50% to 250% with crystal-sharp vector graphics for 1080p, 1440p, or 4K monitors (quick presets: 75%, 100%, 125%, 150%, 200%).
   - **Interactive Mouse-Wheel Scaling**: In Edit Mode, scroll your mouse wheel over the overlay to scale it up or down in real-time!

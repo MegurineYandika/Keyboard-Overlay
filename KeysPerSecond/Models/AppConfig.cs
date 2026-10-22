@@ -66,7 +66,7 @@ namespace KeysPerSecond.Models
         public double KeyWidth { get; set; } = 64.0;
 
         [JsonPropertyName("KeyHeight")]
-        public double KeyHeight { get; set; } = 64.0;
+        public double KeyHeight { get; set; } = 76.0;
 
         [JsonPropertyName("KeySpacing")]
         public double KeySpacing { get; set; } = 8.0;
@@ -89,6 +89,18 @@ namespace KeysPerSecond.Models
         [JsonPropertyName("Orientation")]
         public string Orientation { get; set; } = "Horizontal";
 
+        [JsonPropertyName("ShowHoldDuration")]
+        public bool ShowHoldDuration { get; set; } = true;
+
+        [JsonPropertyName("ShowHoldBar")]
+        public bool ShowHoldBar { get; set; } = true;
+
+        [JsonPropertyName("MaxHoldDurationMs")]
+        public double MaxHoldDurationMs { get; set; } = 300.0;
+
+        [JsonPropertyName("HoldBarDecayMs")]
+        public double HoldBarDecayMs { get; set; } = 600.0;
+
         public StyleConfig Clone() => new()
         {
             AccentColor = this.AccentColor,
@@ -105,7 +117,11 @@ namespace KeysPerSecond.Models
             ShowKpsCounter = this.ShowKpsCounter,
             ShowMaxKps = this.ShowMaxKps,
             ShowTotalCounter = this.ShowTotalCounter,
-            Orientation = this.Orientation
+            Orientation = this.Orientation,
+            ShowHoldDuration = this.ShowHoldDuration,
+            ShowHoldBar = this.ShowHoldBar,
+            MaxHoldDurationMs = this.MaxHoldDurationMs,
+            HoldBarDecayMs = this.HoldBarDecayMs
         };
     }
 

@@ -339,9 +339,11 @@
                                         Width="{Binding Width}"
                                         Height="{Binding Height}"
                                         Margin="4">
-                                    <Grid>
+                                    <Grid Margin="2,4">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
                                         </Grid.RowDefinitions>
 
@@ -349,7 +351,7 @@
                                         <TextBlock Grid.Row="0"
                                                    Text="{Binding Label}"
                                                    FontFamily="Segoe UI, Segoe UI Black, sans-serif"
-                                                   FontSize="22"
+                                                   FontSize="20"
                                                    FontWeight="Black"
                                                    Foreground="#FFFFFF"
                                                    HorizontalAlignment="Center"
@@ -365,14 +367,66 @@
                                             </TextBlock.Style>
                                         </TextBlock>
 
-                                        <!-- Individual Key Press Counter -->
+                                        <!-- Keypress Hold Duration Text (e.g. "45ms") -->
                                         <Border Grid.Row="1"
-                                                Margin="0,0,0,6"
+                                                Margin="0,0,0,2"
+                                                HorizontalAlignment="Center"
+                                                Visibility="{Binding DataContext.Config.Style.ShowHoldDuration, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}">
+                                            <TextBlock Text="{Binding FormattedDuration}"
+                                                       FontFamily="Segoe UI, Segoe UI Bold, sans-serif"
+                                                       FontSize="9.5"
+                                                       FontWeight="Bold"
+                                                       Foreground="{Binding AccentBrush}"
+                                                       Opacity="{Binding HoldBarOpacity}"
+                                                       HorizontalAlignment="Center">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsPressed}" Value="True">
+                                                                <Setter Property="Foreground" Value="#0A0B10" />
+                                                                <Setter Property="Opacity" Value="1.0" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Border>
+
+                                        <!-- Press Time Hold Bar Animation -->
+                                        <Border Grid.Row="2"
+                                                Margin="6,1,6,3"
+                                                Height="4"
+                                                CornerRadius="2"
+                                                Background="#40000000"
+                                                HorizontalAlignment="Stretch"
+                                                Visibility="{Binding DataContext.Config.Style.ShowHoldBar, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}">
+                                            <Border Height="4"
+                                                    CornerRadius="2"
+                                                    HorizontalAlignment="Left"
+                                                    Width="{Binding HoldBarWidth}"
+                                                    Background="{Binding AccentBrush}"
+                                                    Opacity="{Binding HoldBarOpacity}">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsPressed}" Value="True">
+                                                                <Setter Property="Background" Value="#FFFFFF" />
+                                                                <Setter Property="Opacity" Value="1.0" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                            </Border>
+                                        </Border>
+
+                                        <!-- Individual Key Press Counter -->
+                                        <Border Grid.Row="3"
+                                                Margin="0,1,0,3"
                                                 HorizontalAlignment="Center"
                                                 Visibility="{Binding DataContext.Config.Style.ShowIndividualCounters, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}">
                                             <TextBlock Text="{Binding TotalPresses, StringFormat='{}{0:N0}'}"
                                                        FontFamily="Segoe UI, Segoe UI Semibold, sans-serif"
-                                                       FontSize="11"
+                                                       FontSize="10"
                                                        FontWeight="Bold"
                                                        Foreground="#8B95A5"
                                                        HorizontalAlignment="Center">

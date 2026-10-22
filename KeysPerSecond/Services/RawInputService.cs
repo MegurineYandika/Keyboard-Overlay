@@ -378,9 +378,7 @@ namespace KeysPerSecond.Services
 
                     for (int i = 0; i < items.Length; i++)
                     {
-                        var item = items[i];
-                        item.IsPressed = true;
-                        item.IncrementPresses();
+                        items[i].OnKeyDown(timestamp);
                     }
                 }
             }
@@ -389,10 +387,11 @@ namespace KeysPerSecond.Services
                 if (_keyPhysicalDown[vkey])
                 {
                     _keyPhysicalDown[vkey] = false;
+                    long timestamp = Stopwatch.GetTimestamp();
 
                     for (int i = 0; i < items.Length; i++)
                     {
-                        items[i].IsPressed = false;
+                        items[i].OnKeyUp(timestamp);
                     }
                 }
             }

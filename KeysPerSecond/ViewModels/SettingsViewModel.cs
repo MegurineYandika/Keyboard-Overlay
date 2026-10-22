@@ -240,6 +240,36 @@ namespace KeysPerSecond.ViewModels
             set => SetProperty(ref _showIndividualCounters, value);
         }
 
+        // Hold Duration & Hold Bar settings
+        private bool _showHoldDuration;
+        private bool _showHoldBar;
+        private double _maxHoldDurationMs;
+        private double _holdBarDecayMs;
+
+        public bool ShowHoldDuration
+        {
+            get => _showHoldDuration;
+            set => SetProperty(ref _showHoldDuration, value);
+        }
+
+        public bool ShowHoldBar
+        {
+            get => _showHoldBar;
+            set => SetProperty(ref _showHoldBar, value);
+        }
+
+        public double MaxHoldDurationMs
+        {
+            get => _maxHoldDurationMs;
+            set => SetProperty(ref _maxHoldDurationMs, Math.Round(value, 0));
+        }
+
+        public double HoldBarDecayMs
+        {
+            get => _holdBarDecayMs;
+            set => SetProperty(ref _holdBarDecayMs, Math.Round(value, 0));
+        }
+
         // Hotkeys
         private string _toggleEditModeKey;
         private string _resetStatsKey;
@@ -280,6 +310,10 @@ namespace KeysPerSecond.ViewModels
             _showMaxKps = config.Style.ShowMaxKps;
             _showTotalCounter = config.Style.ShowTotalCounter;
             _showIndividualCounters = config.Style.ShowIndividualCounters;
+            _showHoldDuration = config.Style.ShowHoldDuration;
+            _showHoldBar = config.Style.ShowHoldBar;
+            _maxHoldDurationMs = config.Style.MaxHoldDurationMs > 0 ? config.Style.MaxHoldDurationMs : 300.0;
+            _holdBarDecayMs = config.Style.HoldBarDecayMs > 0 ? config.Style.HoldBarDecayMs : 600.0;
 
             _toggleEditModeKey = config.ToggleEditModeKey;
             _resetStatsKey = config.ResetStatsKey;
@@ -428,6 +462,10 @@ namespace KeysPerSecond.ViewModels
             result.Style.ShowMaxKps = ShowMaxKps;
             result.Style.ShowTotalCounter = ShowTotalCounter;
             result.Style.ShowIndividualCounters = ShowIndividualCounters;
+            result.Style.ShowHoldDuration = ShowHoldDuration;
+            result.Style.ShowHoldBar = ShowHoldBar;
+            result.Style.MaxHoldDurationMs = MaxHoldDurationMs;
+            result.Style.HoldBarDecayMs = HoldBarDecayMs;
 
             result.ToggleEditModeKey = ToggleEditModeKey;
             result.ResetStatsKey = ResetStatsKey;

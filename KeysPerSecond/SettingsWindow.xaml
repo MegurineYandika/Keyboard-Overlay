@@ -592,14 +592,53 @@
                         </Border>
 
                         <!-- HUD Display Toggles -->
-                        <Border Background="#161A2B" BorderBrush="#2B324E" BorderThickness="1" CornerRadius="8" Padding="14">
+                        <Border Background="#161A2B" BorderBrush="#2B324E" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,12">
                             <StackPanel>
                                 <TextBlock Text="HUD Metrics Visibility" FontWeight="Bold" FontSize="13" Foreground="#FFFFFF" Margin="0,0,0,10" />
 
                                 <CheckBox Content="Show Live KPS Counter &amp; Activity Bar" IsChecked="{Binding ShowKpsCounter}" Foreground="#E2E8F0" Margin="0,0,0,8" />
                                 <CheckBox Content="Show Peak Session Max KPS" IsChecked="{Binding ShowMaxKps}" Foreground="#E2E8F0" Margin="0,0,0,8" />
                                 <CheckBox Content="Show Total Keypresses Counter" IsChecked="{Binding ShowTotalCounter}" Foreground="#E2E8F0" Margin="0,0,0,8" />
-                                <CheckBox Content="Show Individual Counters on Each Key" IsChecked="{Binding ShowIndividualCounters}" Foreground="#E2E8F0" />
+                                <CheckBox Content="Show Individual Counters on Each Key" IsChecked="{Binding ShowIndividualCounters}" Foreground="#E2E8F0" Margin="0,0,0,8" />
+                                <CheckBox Content="Show Keypress Hold Duration (e.g. 45ms)" IsChecked="{Binding ShowHoldDuration}" Foreground="#E2E8F0" Margin="0,0,0,8" />
+                                <CheckBox Content="Show Keypress Hold Time Bar Animation" IsChecked="{Binding ShowHoldBar}" Foreground="#E2E8F0" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Keypress Hold Duration & Bar Configuration -->
+                        <Border Background="#161A2B" BorderBrush="#2B324E" BorderThickness="1" CornerRadius="8" Padding="14">
+                            <StackPanel>
+                                <TextBlock Text="Keypress Hold Duration &amp; Bar Timing" FontWeight="Bold" FontSize="13" Foreground="#FFFFFF" Margin="0,0,0,12" />
+
+                                <!-- Max Benchmark Duration Slider -->
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="200" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="60" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Full Bar Benchmark" Foreground="#CBD5E1" FontWeight="SemiBold" />
+                                        <TextBlock Text="Press duration for 100% full bar" FontSize="10" Foreground="#7D8BA3" />
+                                    </StackPanel>
+                                    <Slider Grid.Column="1" Minimum="100" Maximum="1000" SmallChange="25" LargeChange="50" Value="{Binding MaxHoldDurationMs}" VerticalAlignment="Center" Margin="0,0,12,0" />
+                                    <TextBlock Grid.Column="2" Text="{Binding MaxHoldDurationMs, StringFormat='{}{0}ms'}" FontWeight="Bold" Foreground="#00E5FF" VerticalAlignment="Center" />
+                                </Grid>
+
+                                <!-- Hold Bar Decay / Fade-Out Slider -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="200" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="60" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Fade-Out Retention" Foreground="#CBD5E1" FontWeight="SemiBold" />
+                                        <TextBlock Text="How long last press time stays visible" FontSize="10" Foreground="#7D8BA3" />
+                                    </StackPanel>
+                                    <Slider Grid.Column="1" Minimum="200" Maximum="2000" SmallChange="50" LargeChange="100" Value="{Binding HoldBarDecayMs}" VerticalAlignment="Center" Margin="0,0,12,0" />
+                                    <TextBlock Grid.Column="2" Text="{Binding HoldBarDecayMs, StringFormat='{}{0}ms'}" FontWeight="Bold" Foreground="#00E5FF" VerticalAlignment="Center" />
+                                </Grid>
                             </StackPanel>
                         </Border>
                     </StackPanel>

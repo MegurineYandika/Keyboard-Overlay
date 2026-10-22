@@ -151,6 +151,30 @@ namespace KeysPerSecond.Tests
         }
 
         [Fact]
+        public void HoldDurationAndBarSettings_UpdateAndBuildAccurately()
+        {
+            var config = new AppConfig();
+            var vm = new SettingsViewModel(config);
+
+            Assert.True(vm.ShowHoldDuration);
+            Assert.True(vm.ShowHoldBar);
+            Assert.Equal(300.0, vm.MaxHoldDurationMs);
+            Assert.Equal(600.0, vm.HoldBarDecayMs);
+
+            vm.ShowHoldDuration = false;
+            vm.ShowHoldBar = false;
+            vm.MaxHoldDurationMs = 450.0;
+            vm.HoldBarDecayMs = 800.0;
+
+            var result = vm.BuildResultConfig();
+
+            Assert.False(result.Style.ShowHoldDuration);
+            Assert.False(result.Style.ShowHoldBar);
+            Assert.Equal(450.0, result.Style.MaxHoldDurationMs);
+            Assert.Equal(800.0, result.Style.HoldBarDecayMs);
+        }
+
+        [Fact]
         public void BuildResultConfig_ReflectsAllModifications()
         {
             var config = new AppConfig();

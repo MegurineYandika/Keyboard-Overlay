@@ -3,6 +3,9 @@
     "Left": 200.0,
     "Top": 200.0,
     "Scale": 1.0,
+    "CustomWidth": 0.0,
+    "CustomHeight": 0.0,
+    "AutoFit": true,
     "Topmost": true,
     "IsLocked": true
   },
@@ -14,14 +17,18 @@
     "BorderColor": "#2A2E45",
     "TextColor": "#FFFFFF",
     "KeyWidth": 68.0,
-    "KeyHeight": 68.0,
+    "KeyHeight": 76.0,
     "KeySpacing": 10.0,
     "CornerRadius": 14.0,
     "ShowIndividualCounters": true,
     "ShowKpsCounter": true,
     "ShowMaxKps": true,
     "ShowTotalCounter": true,
-    "Orientation": "Horizontal"
+    "Orientation": "Horizontal",
+    "ShowHoldDuration": true,
+    "ShowHoldBar": true,
+    "MaxHoldDurationMs": 300.0,
+    "HoldBarDecayMs": 600.0
   },
   "ToggleEditModeKey": "Ctrl+Shift+F10",
   "ResetStatsKey": "Ctrl+Shift+R",
@@ -52,4 +59,3 @@
     }
   ]
 }
-

@@ -231,6 +231,20 @@ namespace KeysPerSecond.ViewModels
         }
 
         /// <summary>
+        /// Updates the real-time hold durations and animated hold bars for all tracked keys.
+        /// </summary>
+        public void UpdateHoldAnimations(long currentTimestamp)
+        {
+            double maxBenchmark = _config.Style.MaxHoldDurationMs;
+            double decayWindow = _config.Style.HoldBarDecayMs;
+
+            for (int i = 0; i < TrackedKeys.Count; i++)
+            {
+                TrackedKeys[i].UpdateHoldAnimation(currentTimestamp, maxBenchmark, decayWindow);
+            }
+        }
+
+        /// <summary>
         /// Resets all counters and KPS metrics.
         /// </summary>
         public void ResetStats()
