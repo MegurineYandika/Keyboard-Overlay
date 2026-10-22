@@ -198,6 +198,47 @@ namespace KeysPerSecond.Tests
         }
 
         [Fact]
+        public void WaterfallSettings_BuildResultConfig_PreservesAndAppliesValues()
+        {
+            var config = new AppConfig();
+            var vm = new SettingsViewModel(config);
+
+            Assert.True(vm.WaterfallEnabled);
+            Assert.True(vm.IsUpscroll);
+            Assert.False(vm.IsDownscroll);
+            Assert.Equal(0.8, vm.WaterfallSpeed);
+            Assert.Equal(1500.0, vm.WaterfallMaxVisibleMs);
+            Assert.Equal(0.75, vm.WaterfallOpacity);
+            Assert.Equal(4.0, vm.WaterfallCornerRadius);
+            Assert.True(vm.WaterfallUseKeyAccentColors);
+            Assert.Equal(200.0, vm.WaterfallHeight);
+
+            // Change values
+            vm.WaterfallEnabled = false;
+            vm.IsDownscroll = true;
+            vm.WaterfallSpeed = 1.4;
+            vm.WaterfallMaxVisibleMs = 2200.0;
+            vm.WaterfallOpacity = 0.9;
+            vm.WaterfallCornerRadius = 8.0;
+            vm.WaterfallUseKeyAccentColors = false;
+            vm.WaterfallHeight = 280.0;
+
+            Assert.True(vm.IsDownscroll);
+            Assert.False(vm.IsUpscroll);
+            Assert.Equal("Downscroll", vm.WaterfallDirection);
+
+            var result = vm.BuildResultConfig();
+            Assert.False(result.Waterfall.IsEnabled);
+            Assert.Equal("Downscroll", result.Waterfall.ScrollDirection);
+            Assert.Equal(1.4, result.Waterfall.ScrollSpeed);
+            Assert.Equal(2200.0, result.Waterfall.MaxVisibleDurationMs);
+            Assert.Equal(0.9, result.Waterfall.BarOpacity);
+            Assert.Equal(8.0, result.Waterfall.BarCornerRadius);
+            Assert.False(result.Waterfall.UseKeyAccentColors);
+            Assert.Equal(280.0, result.Waterfall.Height);
+        }
+
+        [Fact]
         public void SettingsWindow_InitializesWithoutException_OnSTAThread()
         {
             Exception? caughtException = null;

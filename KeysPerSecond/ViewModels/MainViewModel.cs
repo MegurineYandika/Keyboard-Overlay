@@ -35,6 +35,8 @@ namespace KeysPerSecond.ViewModels
 
         public ObservableCollection<KeyItemViewModel> TrackedKeys { get; }
 
+        public NoteStreamBuffer WaterfallBuffer { get; } = new(1024, 64);
+
         public int CurrentKps
         {
             get => _currentKps;
@@ -120,9 +122,11 @@ namespace KeysPerSecond.ViewModels
         {
             _config = config;
             TrackedKeys.Clear();
+            WaterfallBuffer.Clear();
 
-            foreach (var k in config.TrackedKeys)
+            for (int i = 0; i < config.TrackedKeys.Count; i++)
             {
+                var k = config.TrackedKeys[i];
                 double width = k.Width ?? config.Style.KeyWidth;
                 double height = k.Height ?? config.Style.KeyHeight;
                 string accent = !string.IsNullOrEmpty(k.AccentColor) ? k.AccentColor : config.Style.AccentColor;
@@ -133,7 +137,12 @@ namespace KeysPerSecond.ViewModels
                     k.Label ?? KeyToVkHelper.GetDefaultLabel(k.VirtualKey),
                     accent,
                     width,
-                    height);
+                    height)
+                {
+                    ColumnIndex = i,
+                    KeyDownAction = (col, ts) => WaterfallBuffer.OnKeyDown(col, ts),
+                    KeyUpAction = (col, ts) => WaterfallBuffer.OnKeyUp(col, ts)
+                };
 
                 TrackedKeys.Add(item);
             }
@@ -172,13 +181,19 @@ namespace KeysPerSecond.ViewModels
 
             double width = keyConfig.Width ?? _config.Style.KeyWidth;
             double height = keyConfig.Height ?? _config.Style.KeyHeight;
+            int newIndex = TrackedKeys.Count;
             var item = new KeyItemViewModel(
                 keyConfig.VirtualKey,
                 keyConfig.Key,
                 keyConfig.Label,
                 keyConfig.AccentColor,
                 width,
-                height);
+                height)
+            {
+                ColumnIndex = newIndex,
+                KeyDownAction = (col, ts) => WaterfallBuffer.OnKeyDown(col, ts),
+                KeyUpAction = (col, ts) => WaterfallBuffer.OnKeyUp(col, ts)
+            };
 
             TrackedKeys.Add(item);
             ConfigurationApplied?.Invoke();
@@ -197,6 +212,13 @@ namespace KeysPerSecond.ViewModels
                 {
                     _config.TrackedKeys.RemoveAt(index);
                 }
+
+                for (int i = 0; i < TrackedKeys.Count; i++)
+                {
+                    TrackedKeys[i].ColumnIndex = i;
+                }
+                WaterfallBuffer.Clear();
+
                 ConfigurationApplied?.Invoke();
                 return true;
             }
@@ -250,6 +272,7 @@ namespace KeysPerSecond.ViewModels
         public void ResetStats()
         {
             _kpsWindow.Reset();
+            WaterfallBuffer.Clear();
             CurrentKps = 0;
             MaxKps = 0;
             TotalPresses = 0;
@@ -263,6 +286,10 @@ namespace KeysPerSecond.ViewModels
         public void ToggleEditMode()
         {
             IsEditMode = !IsEditMode;
+            if (IsEditMode)
+            {
+                WaterfallBuffer.Clear();
+            }
         }
     }
 }

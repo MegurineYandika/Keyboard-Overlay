@@ -30,6 +30,16 @@
     "MaxHoldDurationMs": 300.0,
     "HoldBarDecayMs": 600.0
   },
+  "Waterfall": {
+    "IsEnabled": true,
+    "ScrollDirection": "Upscroll",
+    "ScrollSpeed": 0.8,
+    "MaxVisibleDurationMs": 1500.0,
+    "BarOpacity": 0.75,
+    "BarCornerRadius": 4.0,
+    "UseKeyAccentColors": true,
+    "Height": 200.0
+  },
   "ToggleEditModeKey": "Ctrl+Shift+F10",
   "ResetStatsKey": "Ctrl+Shift+R",
   "TrackedKeys": [

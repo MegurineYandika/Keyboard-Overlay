@@ -103,6 +103,10 @@ namespace KeysPerSecond.Services
         /// </summary>
         public static void NormalizeConfig(AppConfig config)
         {
+            config.Window ??= new WindowConfig();
+            config.Style ??= new StyleConfig();
+            config.Waterfall ??= new WaterfallConfig();
+
             if (config.TrackedKeys == null || config.TrackedKeys.Count == 0)
             {
                 config.TrackedKeys = new()

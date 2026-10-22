@@ -644,6 +644,133 @@
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
+
+            <!-- TAB 4: WATERFALL PIANO ROLL VISUALIZER -->
+            <TabItem Header="🌊 Waterfall Piano Roll">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,14,0,0">
+                    <StackPanel Orientation="Vertical">
+
+                        <!-- Main Toggle -->
+                        <Border Background="#161A2B" BorderBrush="#2B324E" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="Piano Roll Waterfall Bar Visualizer" FontWeight="Bold" FontSize="13" Foreground="#FFFFFF" Margin="0,0,0,6" />
+                                <TextBlock Text="Ultra-low-latency, zero-allocation reactive vertical bars scrolling in rhythm game (osu!mania) style" Foreground="#7D8BA3" FontSize="11" Margin="0,0,0,12" />
+
+                                <CheckBox Content="Enable Waterfall Piano Roll Visualizer"
+                                          IsChecked="{Binding WaterfallEnabled}"
+                                          Foreground="#00E5FF"
+                                          FontWeight="Bold"
+                                          FontSize="13"
+                                          Margin="0,0,0,12" />
+
+                                <CheckBox Content="Use Key Accent Colors (Sync note bar colors with each key)"
+                                          IsChecked="{Binding WaterfallUseKeyAccentColors}"
+                                          Foreground="#E2E8F0" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Scroll Direction -->
+                        <Border Background="#161A2B" BorderBrush="#2B324E" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Scroll Direction" FontWeight="Bold" FontSize="13" Foreground="#FFFFFF" />
+                                    <TextBlock Text="Upscroll moves notes upward from the keys; Downscroll moves them downward" Foreground="#7D8BA3" FontSize="11" Margin="0,2,0,0" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <RadioButton Content="Upscroll (Upward)" IsChecked="{Binding IsUpscroll}" Foreground="#FFFFFF" Margin="0,0,14,0" VerticalAlignment="Center" />
+                                    <RadioButton Content="Downscroll (Downward)" IsChecked="{Binding IsDownscroll}" Foreground="#FFFFFF" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Waterfall Dimensions & Speed -->
+                        <Border Background="#161A2B" BorderBrush="#2B324E" BorderThickness="1" CornerRadius="8" Padding="14">
+                            <StackPanel>
+                                <TextBlock Text="Visualizer Lane &amp; Scroll Dynamics" FontWeight="Bold" FontSize="13" Foreground="#FFFFFF" Margin="0,0,0,12" />
+
+                                <!-- Waterfall Height -->
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="200" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="60" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Visualizer Height" Foreground="#CBD5E1" FontWeight="SemiBold" />
+                                        <TextBlock Text="Vertical length of the waterfall lane" FontSize="10" Foreground="#7D8BA3" />
+                                    </StackPanel>
+                                    <Slider Grid.Column="1" Minimum="80" Maximum="500" SmallChange="10" LargeChange="25" Value="{Binding WaterfallHeight}" VerticalAlignment="Center" Margin="0,0,12,0" />
+                                    <TextBlock Grid.Column="2" Text="{Binding WaterfallHeight, StringFormat='{}{0}px'}" FontWeight="Bold" Foreground="#00E5FF" VerticalAlignment="Center" />
+                                </Grid>
+
+                                <!-- Scroll Speed -->
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="200" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="60" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Scroll Speed" Foreground="#CBD5E1" FontWeight="SemiBold" />
+                                        <TextBlock Text="Speed in pixels per millisecond" FontSize="10" Foreground="#7D8BA3" />
+                                    </StackPanel>
+                                    <Slider Grid.Column="1" Minimum="0.1" Maximum="2.5" SmallChange="0.05" LargeChange="0.1" Value="{Binding WaterfallSpeed}" VerticalAlignment="Center" Margin="0,0,12,0" />
+                                    <TextBlock Grid.Column="2" Text="{Binding WaterfallSpeed, StringFormat='{}{0:F2}'}" FontWeight="Bold" Foreground="#00E5FF" VerticalAlignment="Center" />
+                                </Grid>
+
+                                <!-- Max Visible Duration -->
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="200" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="60" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Visible Time Window" Foreground="#CBD5E1" FontWeight="SemiBold" />
+                                        <TextBlock Text="Cull notes older than this threshold" FontSize="10" Foreground="#7D8BA3" />
+                                    </StackPanel>
+                                    <Slider Grid.Column="1" Minimum="300" Maximum="3000" SmallChange="100" LargeChange="250" Value="{Binding WaterfallMaxVisibleMs}" VerticalAlignment="Center" Margin="0,0,12,0" />
+                                    <TextBlock Grid.Column="2" Text="{Binding WaterfallMaxVisibleMs, StringFormat='{}{0}ms'}" FontWeight="Bold" Foreground="#00E5FF" VerticalAlignment="Center" />
+                                </Grid>
+
+                                <!-- Bar Opacity -->
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="200" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="60" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Bar Opacity" Foreground="#CBD5E1" FontWeight="SemiBold" />
+                                        <TextBlock Text="Transparency of active and moving bars" FontSize="10" Foreground="#7D8BA3" />
+                                    </StackPanel>
+                                    <Slider Grid.Column="1" Minimum="0.1" Maximum="1.0" SmallChange="0.05" LargeChange="0.1" Value="{Binding WaterfallOpacity}" VerticalAlignment="Center" Margin="0,0,12,0" />
+                                    <TextBlock Grid.Column="2" Text="{Binding WaterfallOpacity, StringFormat='{}{0:P0}'}" FontWeight="Bold" Foreground="#00E5FF" VerticalAlignment="Center" />
+                                </Grid>
+
+                                <!-- Bar Corner Rounding -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="200" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="60" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Bar Corner Rounding" Foreground="#CBD5E1" FontWeight="SemiBold" />
+                                        <TextBlock Text="Rounded edges on moving note bars" FontSize="10" Foreground="#7D8BA3" />
+                                    </StackPanel>
+                                    <Slider Grid.Column="1" Minimum="0" Maximum="16" SmallChange="1" LargeChange="2" Value="{Binding WaterfallCornerRadius}" VerticalAlignment="Center" Margin="0,0,12,0" />
+                                    <TextBlock Grid.Column="2" Text="{Binding WaterfallCornerRadius, StringFormat='{}{0}px'}" FontWeight="Bold" Foreground="#00E5FF" VerticalAlignment="Center" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
         </TabControl>
 
         <!-- FOOTER ACTIONS -->

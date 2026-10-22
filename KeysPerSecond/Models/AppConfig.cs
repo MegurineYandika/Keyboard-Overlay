@@ -133,6 +133,9 @@ namespace KeysPerSecond.Models
         [JsonPropertyName("Style")]
         public StyleConfig Style { get; set; } = new();
 
+        [JsonPropertyName("Waterfall")]
+        public WaterfallConfig Waterfall { get; set; } = new();
+
         [JsonPropertyName("ToggleEditModeKey")]
         public string ToggleEditModeKey { get; set; } = "Ctrl+Shift+F10";
 
@@ -154,6 +157,7 @@ namespace KeysPerSecond.Models
             {
                 Window = this.Window.Clone(),
                 Style = this.Style.Clone(),
+                Waterfall = this.Waterfall.Clone(),
                 ToggleEditModeKey = this.ToggleEditModeKey,
                 ResetStatsKey = this.ResetStatsKey,
                 TrackedKeys = new List<KeyBindingConfig>()

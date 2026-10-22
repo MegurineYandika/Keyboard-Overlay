@@ -33,6 +33,7 @@ namespace KeysPerSecond
 
             _viewModel = new MainViewModel(_config);
             this.DataContext = _viewModel;
+            _viewModel.ConfigurationApplied += OnConfigurationApplied;
 
             this.SourceInitialized += OnSourceInitialized;
             this.Loaded += OnLoaded;
@@ -53,6 +54,9 @@ namespace KeysPerSecond
 
         private void OnLoaded(object? sender, EventArgs e)
         {
+            WaterfallControl.Configure(_config, _viewModel.WaterfallBuffer, _viewModel.TrackedKeys);
+            ApplyWaterfallAlignment();
+
             // Start the Raw Input service
             _rawInputService = new RawInputService(
                 _viewModel,
@@ -67,6 +71,11 @@ namespace KeysPerSecond
             long now = Stopwatch.GetTimestamp();
             _viewModel.UpdateKps(now);
             _viewModel.UpdateHoldAnimations(now);
+
+            if (_config.Waterfall.IsEnabled && !_viewModel.IsEditMode)
+            {
+                WaterfallControl.InvalidateVisual();
+            }
         }
 
         /// <summary>
@@ -101,6 +110,7 @@ namespace KeysPerSecond
         public void ToggleEditMode()
         {
             _viewModel.ToggleEditMode();
+            WaterfallControl.SetEditMode(_viewModel.IsEditMode);
             ApplyClickThroughStyles(!_viewModel.IsEditMode);
 
             if (!_viewModel.IsEditMode)
@@ -184,8 +194,24 @@ namespace KeysPerSecond
                 _viewModel.UpdateConfig(_config);
                 _rawInputService?.UpdateHotkeys(_config);
                 _rawInputService?.RebuildLookupTable();
+                WaterfallControl.Configure(_config, _viewModel.WaterfallBuffer, _viewModel.TrackedKeys);
+                ApplyWaterfallAlignment();
                 _configService.SaveConfig(_config);
             }
+        }
+
+        private void OnConfigurationApplied()
+        {
+            WaterfallControl.Configure(_config, _viewModel.WaterfallBuffer, _viewModel.TrackedKeys);
+            ApplyWaterfallAlignment();
+        }
+
+        private void ApplyWaterfallAlignment()
+        {
+            bool isDownscroll = string.Equals(_config.Waterfall.ScrollDirection, "Downscroll", StringComparison.OrdinalIgnoreCase);
+            var alignment = isDownscroll ? VerticalAlignment.Top : VerticalAlignment.Bottom;
+            WaterfallControl.VerticalAlignment = alignment;
+            KeysItemsControl.VerticalAlignment = alignment;
         }
 
         private void OnExitAppClick(object sender, RoutedEventArgs e)

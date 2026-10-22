@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:KeysPerSecond"
         xmlns:vm="clr-namespace:KeysPerSecond.ViewModels"
         xmlns:conv="clr-namespace:KeysPerSecond.Converters"
+        xmlns:controls="clr-namespace:KeysPerSecond.Controls"
         mc:Ignorable="d"
         Title="KeysPerSecond Overlay"
         WindowStyle="None"
@@ -325,8 +326,21 @@
                         </StackPanel>
                     </Grid>
 
-                    <!-- TRACKED KEYS ITEMS CONTROL -->
-                    <ItemsControl ItemsSource="{Binding TrackedKeys}">
+                    <!-- KEYS AND PIANO ROLL WATERFALL VISUALIZER LAYER -->
+                    <Grid HorizontalAlignment="Left">
+                        <!-- Layer 0: Background Waterfall Bar Visualizer (osu!mania style) -->
+                        <controls:WaterfallOverlayControl x:Name="WaterfallControl"
+                                                          Height="{Binding Config.Waterfall.Height}"
+                                                          IsHitTestVisible="False"
+                                                          VerticalAlignment="Bottom"
+                                                          HorizontalAlignment="Left"
+                                                          Visibility="{Binding Config.Waterfall.IsEnabled, Converter={StaticResource BoolToVis}}" />
+
+                        <!-- Layer 1: Tracked Keys (Key Cards in Foreground) -->
+                        <ItemsControl x:Name="KeysItemsControl"
+                                      ItemsSource="{Binding TrackedKeys}"
+                                      VerticalAlignment="Bottom"
+                                      HorizontalAlignment="Left">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Orientation="{Binding DataContext.Config.Style.Orientation, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource StringToOrientation}}" />
@@ -360,7 +374,7 @@
                                                 <Style TargetType="TextBlock">
                                                     <Style.Triggers>
                                                         <DataTrigger Binding="{Binding IsPressed}" Value="True">
-                                                            <Setter Property="Foreground" Value="#0A0B10" />
+                                                             <Setter Property="Foreground" Value="#0A0B10" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
@@ -446,6 +460,7 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+                    </Grid>
 
                 </StackPanel>
             </Grid>

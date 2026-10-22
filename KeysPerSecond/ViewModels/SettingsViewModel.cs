@@ -274,6 +274,95 @@ namespace KeysPerSecond.ViewModels
         private string _toggleEditModeKey;
         private string _resetStatsKey;
 
+        // Waterfall / Piano Roll Bar Visualizer settings
+        private bool _waterfallEnabled;
+        private string _waterfallDirection = "Upscroll";
+        private double _waterfallSpeed = 0.8;
+        private double _waterfallMaxVisibleMs = 1500.0;
+        private double _waterfallOpacity = 0.75;
+        private double _waterfallCornerRadius = 4.0;
+        private bool _waterfallUseKeyAccentColors = true;
+        private double _waterfallHeight = 200.0;
+
+        public bool WaterfallEnabled
+        {
+            get => _waterfallEnabled;
+            set => SetProperty(ref _waterfallEnabled, value);
+        }
+
+        public string WaterfallDirection
+        {
+            get => _waterfallDirection;
+            set
+            {
+                if (SetProperty(ref _waterfallDirection, value))
+                {
+                    OnPropertyChanged(nameof(IsUpscroll));
+                    OnPropertyChanged(nameof(IsDownscroll));
+                }
+            }
+        }
+
+        public bool IsUpscroll
+        {
+            get => !string.Equals(WaterfallDirection, "Downscroll", StringComparison.OrdinalIgnoreCase);
+            set
+            {
+                if (value)
+                {
+                    WaterfallDirection = "Upscroll";
+                }
+            }
+        }
+
+        public bool IsDownscroll
+        {
+            get => string.Equals(WaterfallDirection, "Downscroll", StringComparison.OrdinalIgnoreCase);
+            set
+            {
+                if (value)
+                {
+                    WaterfallDirection = "Downscroll";
+                }
+            }
+        }
+
+        public double WaterfallSpeed
+        {
+            get => _waterfallSpeed;
+            set => SetProperty(ref _waterfallSpeed, Math.Round(value, 2));
+        }
+
+        public double WaterfallMaxVisibleMs
+        {
+            get => _waterfallMaxVisibleMs;
+            set => SetProperty(ref _waterfallMaxVisibleMs, Math.Round(value, 0));
+        }
+
+        public double WaterfallOpacity
+        {
+            get => _waterfallOpacity;
+            set => SetProperty(ref _waterfallOpacity, Math.Round(value, 2));
+        }
+
+        public double WaterfallCornerRadius
+        {
+            get => _waterfallCornerRadius;
+            set => SetProperty(ref _waterfallCornerRadius, Math.Round(value, 0));
+        }
+
+        public bool WaterfallUseKeyAccentColors
+        {
+            get => _waterfallUseKeyAccentColors;
+            set => SetProperty(ref _waterfallUseKeyAccentColors, value);
+        }
+
+        public double WaterfallHeight
+        {
+            get => _waterfallHeight;
+            set => SetProperty(ref _waterfallHeight, Math.Round(value, 0));
+        }
+
         public string ToggleEditModeKey
         {
             get => _toggleEditModeKey;
@@ -317,6 +406,16 @@ namespace KeysPerSecond.ViewModels
 
             _toggleEditModeKey = config.ToggleEditModeKey;
             _resetStatsKey = config.ResetStatsKey;
+
+            var wf = config.Waterfall ?? new WaterfallConfig();
+            _waterfallEnabled = wf.IsEnabled;
+            _waterfallDirection = wf.ScrollDirection ?? "Upscroll";
+            _waterfallSpeed = wf.ScrollSpeed > 0 ? wf.ScrollSpeed : 0.8;
+            _waterfallMaxVisibleMs = wf.MaxVisibleDurationMs > 0 ? wf.MaxVisibleDurationMs : 1500.0;
+            _waterfallOpacity = wf.BarOpacity > 0 ? wf.BarOpacity : 0.75;
+            _waterfallCornerRadius = wf.BarCornerRadius >= 0 ? wf.BarCornerRadius : 4.0;
+            _waterfallUseKeyAccentColors = wf.UseKeyAccentColors;
+            _waterfallHeight = wf.Height > 0 ? wf.Height : 200.0;
 
             _inputAccentColor = config.Style.AccentColor;
         }
@@ -469,6 +568,15 @@ namespace KeysPerSecond.ViewModels
 
             result.ToggleEditModeKey = ToggleEditModeKey;
             result.ResetStatsKey = ResetStatsKey;
+
+            result.Waterfall.IsEnabled = WaterfallEnabled;
+            result.Waterfall.ScrollDirection = WaterfallDirection;
+            result.Waterfall.ScrollSpeed = WaterfallSpeed;
+            result.Waterfall.MaxVisibleDurationMs = WaterfallMaxVisibleMs;
+            result.Waterfall.BarOpacity = WaterfallOpacity;
+            result.Waterfall.BarCornerRadius = WaterfallCornerRadius;
+            result.Waterfall.UseKeyAccentColors = WaterfallUseKeyAccentColors;
+            result.Waterfall.Height = WaterfallHeight;
 
             return result;
         }

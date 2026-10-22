@@ -38,6 +38,10 @@ namespace KeysPerSecond.ViewModels
         public byte VirtualKey { get; }
         public string KeyName { get; }
 
+        public int ColumnIndex { get; set; }
+        public Action<int, long>? KeyDownAction { get; set; }
+        public Action<int, long>? KeyUpAction { get; set; }
+
         public string Label
         {
             get => _label;
@@ -175,6 +179,7 @@ namespace KeysPerSecond.ViewModels
             FormattedDuration = "0ms";
             _lastDisplayedIntMs = 0;
             IncrementPresses();
+            KeyDownAction?.Invoke(ColumnIndex, timestamp);
         }
 
         /// <summary>
@@ -193,6 +198,8 @@ namespace KeysPerSecond.ViewModels
                 FormattedDuration = $"{LastHoldMs:0}ms";
                 _lastDisplayedIntMs = (int)LastHoldMs;
             }
+
+            KeyUpAction?.Invoke(ColumnIndex, timestamp);
         }
 
         /// <summary>
