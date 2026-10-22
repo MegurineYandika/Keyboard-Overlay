@@ -10,12 +10,14 @@ namespace KeysPerSecond.Services
 {
     public sealed unsafe class RawInputService : IDisposable
     {
-        private const int HOTKEY_ID_EDIT = 9001;
-        private const int HOTKEY_ID_RESET = 9002;
+        public const int HOTKEY_ID_EDIT = 9001;
+        public const int HOTKEY_ID_RESET = 9002;
+        public const int HOTKEY_ID_EDIT_ALT = 9003;
 
         private readonly MainViewModel _mainViewModel;
         private readonly Action _onToggleEditMode;
         private readonly Action _onResetStats;
+        private readonly IntPtr _ownerHwnd;
 
         private HwndSource? _hwndSource;
         private IntPtr _hwnd;
@@ -46,11 +48,13 @@ namespace KeysPerSecond.Services
         public RawInputService(
             MainViewModel mainViewModel,
             Action onToggleEditMode,
-            Action onResetStats)
+            Action onResetStats,
+            IntPtr ownerHwnd = default)
         {
             _mainViewModel = mainViewModel;
             _onToggleEditMode = onToggleEditMode;
             _onResetStats = onResetStats;
+            _ownerHwnd = ownerHwnd;
 
             ParseHotkeys(mainViewModel.Config);
             RebuildLookupTable();
@@ -59,28 +63,38 @@ namespace KeysPerSecond.Services
         public IntPtr WindowHandle => _hwnd;
 
         /// <summary>
-        /// Creates a hidden message-only HwndSource window and registers for Win32 Raw Input.
+        /// Registers for Win32 Raw Input and hooks window messages.
+        /// If ownerHwnd was passed, hooks the owner window. Otherwise, creates a dedicated hidden HwndSource.
         /// </summary>
         public void Start()
         {
-            if (_hwndSource != null)
+            if (_hwnd != IntPtr.Zero)
                 return;
 
-            // Create dedicated hidden message-only HwndSource
-            var parameters = new HwndSourceParameters("KeysPerSecond_RawInputListener")
+            if (_ownerHwnd != IntPtr.Zero)
             {
-                WindowStyle = 0,
-                ExtendedWindowStyle = NativeMethods.WS_EX_TOOLWINDOW | NativeMethods.WS_EX_NOACTIVATE,
-                Width = 0,
-                Height = 0,
-                PositionX = -32000,
-                PositionY = -32000,
-                ParentWindow = IntPtr.Zero
-            };
+                _hwnd = _ownerHwnd;
+                var source = HwndSource.FromHwnd(_ownerHwnd);
+                source?.AddHook(HwndMessageHook);
+            }
+            else
+            {
+                // Fallback for headless testing or standalone operation
+                var parameters = new HwndSourceParameters("KeysPerSecond_RawInputListener")
+                {
+                    WindowStyle = 0,
+                    ExtendedWindowStyle = NativeMethods.WS_EX_TOOLWINDOW | NativeMethods.WS_EX_NOACTIVATE,
+                    Width = 0,
+                    Height = 0,
+                    PositionX = -32000,
+                    PositionY = -32000,
+                    ParentWindow = IntPtr.Zero
+                };
 
-            _hwndSource = new HwndSource(parameters);
-            _hwnd = _hwndSource.Handle;
-            _hwndSource.AddHook(HwndMessageHook);
+                _hwndSource = new HwndSource(parameters);
+                _hwnd = _hwndSource.Handle;
+                _hwndSource.AddHook(HwndMessageHook);
+            }
 
             // Register Raw Input Keyboard device with RIDEV_INPUTSINK
             RAWINPUTDEVICE rid = new RAWINPUTDEVICE
@@ -188,29 +202,52 @@ namespace KeysPerSecond.Services
             }
         }
 
+        private static bool SafeRegisterHotKey(IntPtr hwnd, int id, uint modifiers, uint vk)
+        {
+            if (hwnd == IntPtr.Zero || vk == 0)
+                return false;
+
+            // Try with MOD_NOREPEAT first
+            bool ok = NativeMethods.RegisterHotKey(hwnd, id, modifiers | NativeMethods.MOD_NOREPEAT, vk);
+            if (!ok)
+            {
+                // Retry without MOD_NOREPEAT (compatibility fallback for older/quirky drivers)
+                ok = NativeMethods.RegisterHotKey(hwnd, id, modifiers, vk);
+            }
+            return ok;
+        }
+
         private void RegisterGlobalHotkeys()
         {
             if (_hwnd == IntPtr.Zero) return;
 
-            uint editMods = NativeMethods.MOD_NOREPEAT;
+            // 1. Primary Edit Mode Hotkey (e.g. Ctrl + Shift + F10 or user configured)
+            uint editMods = 0;
             if (_editModeRequireCtrl) editMods |= NativeMethods.MOD_CONTROL;
             if (_editModeRequireShift) editMods |= NativeMethods.MOD_SHIFT;
             if (_editModeRequireAlt) editMods |= NativeMethods.MOD_ALT;
+            SafeRegisterHotKey(_hwnd, HOTKEY_ID_EDIT, editMods, _editModeVKey);
 
-            NativeMethods.RegisterHotKey(_hwnd, HOTKEY_ID_EDIT, editMods, _editModeVKey);
+            // 2. Secondary Ergonomic Edit Mode Hotkey: Ctrl + Shift + E (0x45)
+            // Ensures users on 60%/65% or laptop keyboards where F10 requires an Fn key can always toggle edit mode
+            if (_editModeVKey != 0x45)
+            {
+                SafeRegisterHotKey(_hwnd, HOTKEY_ID_EDIT_ALT, NativeMethods.MOD_CONTROL | NativeMethods.MOD_SHIFT, 0x45);
+            }
 
-            uint resetMods = NativeMethods.MOD_NOREPEAT;
+            // 3. Reset Stats Hotkey (e.g. Ctrl + Shift + R)
+            uint resetMods = 0;
             if (_resetStatsRequireCtrl) resetMods |= NativeMethods.MOD_CONTROL;
             if (_resetStatsRequireShift) resetMods |= NativeMethods.MOD_SHIFT;
             if (_resetStatsRequireAlt) resetMods |= NativeMethods.MOD_ALT;
-
-            NativeMethods.RegisterHotKey(_hwnd, HOTKEY_ID_RESET, resetMods, _resetStatsVKey);
+            SafeRegisterHotKey(_hwnd, HOTKEY_ID_RESET, resetMods, _resetStatsVKey);
         }
 
         private void UnregisterGlobalHotkeys()
         {
             if (_hwnd == IntPtr.Zero) return;
             NativeMethods.UnregisterHotKey(_hwnd, HOTKEY_ID_EDIT);
+            NativeMethods.UnregisterHotKey(_hwnd, HOTKEY_ID_EDIT_ALT);
             NativeMethods.UnregisterHotKey(_hwnd, HOTKEY_ID_RESET);
         }
 
@@ -225,7 +262,7 @@ namespace KeysPerSecond.Services
             else if (msg == NativeMethods.WM_HOTKEY)
             {
                 int id = wParam.ToInt32();
-                if (id == HOTKEY_ID_EDIT)
+                if (id == HOTKEY_ID_EDIT || id == HOTKEY_ID_EDIT_ALT)
                 {
                     _onToggleEditMode.Invoke();
                     handled = true;
@@ -268,6 +305,14 @@ namespace KeysPerSecond.Services
                     return;
 
                 ushort rawVk = raw->Keyboard.VKey;
+                ushort makeCode = raw->Keyboard.MakeCode;
+
+                // In raw input, F10 with modifiers may arrive with VKey = 0 but MakeCode = 0x44 (68)
+                if (rawVk == 0 && makeCode == 0x44)
+                {
+                    rawVk = 0x79; // VK_F10
+                }
+
                 if (rawVk == 0 || rawVk > 255)
                     return;
 
@@ -280,7 +325,7 @@ namespace KeysPerSecond.Services
                 UpdateModifiers(vkey, flags, isDown);
 
                 // Check for Raw Input hotkey triggers
-                if (CheckHotkeys(vkey, isDown))
+                if (CheckHotkeys(vkey, makeCode, isDown))
                     return;
 
                 // Dispatch to tracked keys lookup table
@@ -288,23 +333,44 @@ namespace KeysPerSecond.Services
             }
         }
 
-        private bool CheckHotkeys(byte vkey, bool isDown)
+        private static bool IsAsyncKeyDown(int vKey)
+        {
+            return (NativeMethods.GetAsyncKeyState(vKey) & 0x8000) != 0;
+        }
+
+        private bool CheckHotkeys(byte vkey, ushort makeCode, bool isDown)
         {
             if (!isDown) return false;
 
-            if (vkey == _editModeVKey &&
-                (!_editModeRequireCtrl || _isCtrlDown) &&
-                (!_editModeRequireShift || _isShiftDown) &&
-                (!_editModeRequireAlt || _isAltDown))
+            // Direct hardware-level state check via GetAsyncKeyState as fallback
+            // This handles cases where modifiers were pressed before window creation or missed by buffer
+            bool isCtrlHeld = _isCtrlDown || IsAsyncKeyDown(0x11);
+            bool isShiftHeld = _isShiftDown || IsAsyncKeyDown(0x10);
+            bool isAltHeld = _isAltDown || IsAsyncKeyDown(0x12);
+
+            // Primary Edit Mode Check (Configured key or F10 scan code 0x44)
+            bool isEditKey = (vkey == _editModeVKey) || (_editModeVKey == 0x79 && makeCode == 0x44);
+            if (isEditKey &&
+                (!_editModeRequireCtrl || isCtrlHeld) &&
+                (!_editModeRequireShift || isShiftHeld) &&
+                (!_editModeRequireAlt || isAltHeld))
             {
                 _onToggleEditMode.Invoke();
                 return true;
             }
 
+            // Secondary Ergonomic Edit Mode Check: Ctrl + Shift + E ('E' = 0x45, makeCode = 0x12)
+            if ((vkey == 0x45 || makeCode == 0x12) && isCtrlHeld && isShiftHeld)
+            {
+                _onToggleEditMode.Invoke();
+                return true;
+            }
+
+            // Reset Stats Check
             if (vkey == _resetStatsVKey &&
-                (!_resetStatsRequireCtrl || _isCtrlDown) &&
-                (!_resetStatsRequireShift || _isShiftDown) &&
-                (!_resetStatsRequireAlt || _isAltDown))
+                (!_resetStatsRequireCtrl || isCtrlHeld) &&
+                (!_resetStatsRequireShift || isShiftHeld) &&
+                (!_resetStatsRequireAlt || isAltHeld))
             {
                 _onResetStats.Invoke();
                 return true;
@@ -329,10 +395,10 @@ namespace KeysPerSecond.Services
             }
         }
 
-        internal void SimulateRawKeyEvent(byte vkey, bool isDown, ushort flags = 0)
+        internal void SimulateRawKeyEvent(byte vkey, bool isDown, ushort flags = 0, ushort makeCode = 0)
         {
             UpdateModifiers(vkey, flags, isDown);
-            if (CheckHotkeys(vkey, isDown))
+            if (CheckHotkeys(vkey, makeCode, isDown))
                 return;
             DispatchKey(vkey, flags, isDown);
         }
@@ -419,12 +485,20 @@ namespace KeysPerSecond.Services
                 NativeMethods.RegisterRawInputDevices(&rid, 1, (uint)sizeof(RAWINPUTDEVICE));
             }
 
+            if (_ownerHwnd != IntPtr.Zero)
+            {
+                var source = HwndSource.FromHwnd(_ownerHwnd);
+                source?.RemoveHook(HwndMessageHook);
+            }
+
             if (_hwndSource != null)
             {
                 _hwndSource.RemoveHook(HwndMessageHook);
                 _hwndSource.Dispose();
                 _hwndSource = null;
             }
+
+            _hwnd = IntPtr.Zero;
         }
     }
 }

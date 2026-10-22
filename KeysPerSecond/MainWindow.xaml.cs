@@ -57,11 +57,17 @@ namespace KeysPerSecond
             WaterfallControl.Configure(_config, _viewModel.WaterfallBuffer, _viewModel.TrackedKeys);
             ApplyWaterfallAlignment();
 
-            // Start the Raw Input service
+            if (_hwnd == IntPtr.Zero)
+            {
+                _hwnd = new WindowInteropHelper(this).Handle;
+            }
+
+            // Start the Raw Input service attached directly to MainWindow's HWND
             _rawInputService = new RawInputService(
                 _viewModel,
                 onToggleEditMode: () => Dispatcher.InvokeAsync(ToggleEditMode),
-                onResetStats: () => Dispatcher.InvokeAsync(_viewModel.ResetStats));
+                onResetStats: () => Dispatcher.InvokeAsync(_viewModel.ResetStats),
+                ownerHwnd: _hwnd);
 
             _rawInputService.Start();
         }

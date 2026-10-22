@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Linq;
 using KeysPerSecond.Models;
+using KeysPerSecond.Native;
 using KeysPerSecond.Services;
 using KeysPerSecond.ViewModels;
 using Xunit;
@@ -121,6 +122,59 @@ namespace KeysPerSecond.Tests
             service.SimulateRawKeyEvent(0x79, isDown: false);
             service.SimulateRawKeyEvent(0x10, isDown: false);
             service.SimulateRawKeyEvent(0x11, isDown: false);
+        }
+
+        [Fact]
+        public void Modifiers_ToggleEditMode_Via_F10_ScanCode0x44_TriggersAction()
+        {
+            var config = new AppConfig();
+            var vm = new MainViewModel(config);
+            bool editToggled = false;
+            var service = new RawInputService(vm, () => editToggled = true, () => { });
+
+            // Press Ctrl + Shift
+            service.SimulateRawKeyEvent(0x11, isDown: true);
+            service.SimulateRawKeyEvent(0x10, isDown: true);
+
+            // Raw input with F10 hardware scan code 0x44
+            service.SimulateRawKeyEvent(0x79, isDown: true, flags: 0, makeCode: 0x44);
+            Assert.True(editToggled);
+        }
+
+        [Fact]
+        public void Modifiers_ToggleEditMode_Via_CtrlShiftE_Alias_TriggersAction()
+        {
+            var config = new AppConfig();
+            var vm = new MainViewModel(config);
+            bool editToggled = false;
+            var service = new RawInputService(vm, () => editToggled = true, () => { });
+
+            // Press Ctrl + Shift
+            service.SimulateRawKeyEvent(0x11, isDown: true);
+            service.SimulateRawKeyEvent(0x10, isDown: true);
+
+            // Press 'E' (0x45)
+            service.SimulateRawKeyEvent(0x45, isDown: true);
+            Assert.True(editToggled);
+        }
+
+        [Fact]
+        public void RawInputService_Initializes_And_Disposes_Cleanly()
+        {
+            var config = new AppConfig();
+            var vm = new MainViewModel(config);
+            var service = new RawInputService(vm, () => { }, () => { });
+
+            var thread = new System.Threading.Thread(() =>
+            {
+                service.Start();
+                Assert.NotEqual(IntPtr.Zero, service.WindowHandle);
+                service.Dispose();
+                Assert.Equal(IntPtr.Zero, service.WindowHandle);
+            });
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join(5000);
         }
 
         [Fact]

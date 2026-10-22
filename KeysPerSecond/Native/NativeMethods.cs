@@ -71,6 +71,12 @@ namespace KeysPerSecond.Native
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool UnregisterHotKey(IntPtr hWnd, int id);
 
+        [DllImport("user32.dll")]
+        public static extern short GetAsyncKeyState(int vKey);
+
+        [DllImport("user32.dll")]
+        public static extern short GetKeyState(int vKey);
+
         // P/Invoke: Get/SetWindowLongPtr (32-bit & 64-bit safe)
         public static IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex)
         {

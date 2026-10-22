@@ -573,7 +573,7 @@
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
                                         <TextBlock Text="Toggle Drag Mode" Foreground="#CBD5E1" FontWeight="SemiBold" />
-                                        <TextBlock Text="Toggles click-through off to reposition" FontSize="10" Foreground="#7D8BA3" />
+                                        <TextBlock Text="Toggles click-through off to reposition (Ctrl+Shift+E alias always active)" FontSize="10" Foreground="#7D8BA3" />
                                     </StackPanel>
                                     <TextBox Grid.Column="1" Text="{Binding ToggleEditModeKey, UpdateSourceTrigger=PropertyChanged}" MaxLength="30" />
                                 </Grid>
